@@ -1,0 +1,581 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D596C9B3305970DF005A167E /* KinoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D596C9B2305970DF005A167E /* KinoApp.swift */; };
+		D596C9B5305970DF005A167E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D596C9B4305970DF005A167E /* ContentView.swift */; };
+		D596C9B7305970E2005A167E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D596C9B6305970E2005A167E /* Assets.xcassets */; };
+		D596C9BA305970E2005A167E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D596C9B9305970E2005A167E /* Preview Assets.xcassets */; };
+		D596C9C5305970E2005A167E /* KinoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D596C9C4305970E2005A167E /* KinoTests.swift */; };
+		D596C9CF305970E2005A167E /* KinoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D596C9CE305970E2005A167E /* KinoUITests.swift */; };
+		D596C9D1305970E2005A167E /* KinoUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D596C9D0305970E2005A167E /* KinoUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D596C9C1305970E2005A167E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D596C9A7305970DF005A167E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D596C9AE305970DF005A167E;
+			remoteInfo = Kino;
+		};
+		D596C9CB305970E2005A167E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D596C9A7305970DF005A167E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D596C9AE305970DF005A167E;
+			remoteInfo = Kino;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D596C9AF305970DF005A167E /* Kino.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kino.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D596C9B2305970DF005A167E /* KinoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KinoApp.swift; sourceTree = "<group>"; };
+		D596C9B4305970DF005A167E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D596C9B6305970E2005A167E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D596C9B9305970E2005A167E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		D596C9BB305970E2005A167E /* Kino.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Kino.entitlements; sourceTree = "<group>"; };
+		D596C9C0305970E2005A167E /* KinoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KinoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D596C9C4305970E2005A167E /* KinoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KinoTests.swift; sourceTree = "<group>"; };
+		D596C9CA305970E2005A167E /* KinoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KinoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D596C9CE305970E2005A167E /* KinoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KinoUITests.swift; sourceTree = "<group>"; };
+		D596C9D0305970E2005A167E /* KinoUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KinoUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D596C9AC305970DF005A167E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9BD305970E2005A167E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9C7305970E2005A167E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D596C9A6305970DF005A167E = {
+			isa = PBXGroup;
+			children = (
+				D596C9B1305970DF005A167E /* Kino */,
+				D596C9C3305970E2005A167E /* KinoTests */,
+				D596C9CD305970E2005A167E /* KinoUITests */,
+				D596C9B0305970DF005A167E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D596C9B0305970DF005A167E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D596C9AF305970DF005A167E /* Kino.app */,
+				D596C9C0305970E2005A167E /* KinoTests.xctest */,
+				D596C9CA305970E2005A167E /* KinoUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D596C9B1305970DF005A167E /* Kino */ = {
+			isa = PBXGroup;
+			children = (
+				D596C9B2305970DF005A167E /* KinoApp.swift */,
+				D596C9B4305970DF005A167E /* ContentView.swift */,
+				D596C9B6305970E2005A167E /* Assets.xcassets */,
+				D596C9BB305970E2005A167E /* Kino.entitlements */,
+				D596C9B8305970E2005A167E /* Preview Content */,
+			);
+			path = Kino;
+			sourceTree = "<group>";
+		};
+		D596C9B8305970E2005A167E /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				D596C9B9305970E2005A167E /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		D596C9C3305970E2005A167E /* KinoTests */ = {
+			isa = PBXGroup;
+			children = (
+				D596C9C4305970E2005A167E /* KinoTests.swift */,
+			);
+			path = KinoTests;
+			sourceTree = "<group>";
+		};
+		D596C9CD305970E2005A167E /* KinoUITests */ = {
+			isa = PBXGroup;
+			children = (
+				D596C9CE305970E2005A167E /* KinoUITests.swift */,
+				D596C9D0305970E2005A167E /* KinoUITestsLaunchTests.swift */,
+			);
+			path = KinoUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D596C9AE305970DF005A167E /* Kino */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D596C9D4305970E2005A167E /* Build configuration list for PBXNativeTarget "Kino" */;
+			buildPhases = (
+				D596C9AB305970DF005A167E /* Sources */,
+				D596C9AC305970DF005A167E /* Frameworks */,
+				D596C9AD305970DF005A167E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Kino;
+			productName = Kino;
+			productReference = D596C9AF305970DF005A167E /* Kino.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D596C9BF305970E2005A167E /* KinoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D596C9D7305970E2005A167E /* Build configuration list for PBXNativeTarget "KinoTests" */;
+			buildPhases = (
+				D596C9BC305970E2005A167E /* Sources */,
+				D596C9BD305970E2005A167E /* Frameworks */,
+				D596C9BE305970E2005A167E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D596C9C2305970E2005A167E /* PBXTargetDependency */,
+			);
+			name = KinoTests;
+			productName = KinoTests;
+			productReference = D596C9C0305970E2005A167E /* KinoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D596C9C9305970E2005A167E /* KinoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D596C9DA305970E2005A167E /* Build configuration list for PBXNativeTarget "KinoUITests" */;
+			buildPhases = (
+				D596C9C6305970E2005A167E /* Sources */,
+				D596C9C7305970E2005A167E /* Frameworks */,
+				D596C9C8305970E2005A167E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D596C9CC305970E2005A167E /* PBXTargetDependency */,
+			);
+			name = KinoUITests;
+			productName = KinoUITests;
+			productReference = D596C9CA305970E2005A167E /* KinoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D596C9A7305970DF005A167E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1410;
+				LastUpgradeCheck = 1410;
+				TargetAttributes = {
+					D596C9AE305970DF005A167E = {
+						CreatedOnToolsVersion = 14.1;
+					};
+					D596C9BF305970E2005A167E = {
+						CreatedOnToolsVersion = 14.1;
+						TestTargetID = D596C9AE305970DF005A167E;
+					};
+					D596C9C9305970E2005A167E = {
+						CreatedOnToolsVersion = 14.1;
+						TestTargetID = D596C9AE305970DF005A167E;
+					};
+				};
+			};
+			buildConfigurationList = D596C9AA305970DF005A167E /* Build configuration list for PBXProject "Kino" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D596C9A6305970DF005A167E;
+			productRefGroup = D596C9B0305970DF005A167E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D596C9AE305970DF005A167E /* Kino */,
+				D596C9BF305970E2005A167E /* KinoTests */,
+				D596C9C9305970E2005A167E /* KinoUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D596C9AD305970DF005A167E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D596C9BA305970E2005A167E /* Preview Assets.xcassets in Resources */,
+				D596C9B7305970E2005A167E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9BE305970E2005A167E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9C8305970E2005A167E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D596C9AB305970DF005A167E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D596C9B5305970DF005A167E /* ContentView.swift in Sources */,
+				D596C9B3305970DF005A167E /* KinoApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9BC305970E2005A167E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D596C9C5305970E2005A167E /* KinoTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D596C9C6305970E2005A167E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D596C9CF305970E2005A167E /* KinoUITests.swift in Sources */,
+				D596C9D1305970E2005A167E /* KinoUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D596C9C2305970E2005A167E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D596C9AE305970DF005A167E /* Kino */;
+			targetProxy = D596C9C1305970E2005A167E /* PBXContainerItemProxy */;
+		};
+		D596C9CC305970E2005A167E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D596C9AE305970DF005A167E /* Kino */;
+			targetProxy = D596C9CB305970E2005A167E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D596C9D2305970E2005A167E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D596C9D3305970E2005A167E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		D596C9D5305970E2005A167E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Kino/Kino.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Kino/Preview Content\"";
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.Kino;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		D596C9D6305970E2005A167E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Kino/Kino.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Kino/Preview Content\"";
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.Kino;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		D596C9D8305970E2005A167E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.KinoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kino.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Kino";
+			};
+			name = Debug;
+		};
+		D596C9D9305970E2005A167E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.KinoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kino.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Kino";
+			};
+			name = Release;
+		};
+		D596C9DB305970E2005A167E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.KinoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Kino;
+			};
+			name = Debug;
+		};
+		D596C9DC305970E2005A167E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PHDVFWD7NF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.studiokharis.KinoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Kino;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D596C9AA305970DF005A167E /* Build configuration list for PBXProject "Kino" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D596C9D2305970E2005A167E /* Debug */,
+				D596C9D3305970E2005A167E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D596C9D4305970E2005A167E /* Build configuration list for PBXNativeTarget "Kino" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D596C9D5305970E2005A167E /* Debug */,
+				D596C9D6305970E2005A167E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D596C9D7305970E2005A167E /* Build configuration list for PBXNativeTarget "KinoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D596C9D8305970E2005A167E /* Debug */,
+				D596C9D9305970E2005A167E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D596C9DA305970E2005A167E /* Build configuration list for PBXNativeTarget "KinoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D596C9DB305970E2005A167E /* Debug */,
+				D596C9DC305970E2005A167E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D596C9A7305970DF005A167E /* Project object */;
+}
