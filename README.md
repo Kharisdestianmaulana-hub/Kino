@@ -28,15 +28,21 @@
 
 - [English](#english)
   - [What is Kino](#what-is-kino)
+  - [Why Kino](#why-kino)
   - [Features](#features)
   - [Architecture](#architecture)
   - [Getting Started](#getting-started)
+  - [Keyboard Shortcuts](#keyboard-shortcuts)
+  - [Roadmap](#roadmap)
   - [License](#license)
 - [Bahasa Indonesia](#bahasa-indonesia)
   - [Apa itu Kino](#apa-itu-kino)
+  - [Mengapa Kino](#mengapa-kino)
   - [Fitur](#fitur)
   - [Arsitektur](#arsitektur)
   - [Cara Memulai](#cara-memulai)
+  - [Pintasan Keyboard](#pintasan-keyboard)
+  - [Peta Jalan](#peta-jalan-roadmap)
   - [Lisensi](#lisensi)
 
 </details>
@@ -52,6 +58,15 @@ Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It us
 Most "native" editors are actually cross-platform compromises wrapped in a macOS skin. Kino is different. Every line of code was written specifically for macOS and Apple Silicon, taking full advantage of hardware-accelerated decoding, Metal-backed rendering, and the tight integration that only a true native app can provide.
 
 The result is an editor that launches instantly, renders without stutter, and handles 4K footage the way macOS was designed to.
+
+## Why Kino
+
+There are plenty of video editors out there. Here is why Kino exists:
+
+- **Truly native.** Not a web app in disguise. Not an Electron wrapper. Not a Qt port. Kino is 100% SwiftUI and AppKit, compiled directly for macOS. It behaves like a Mac app should: instant window snapping, native dark mode, proper menu bar integration, and full Retina support without extra configuration.
+- **Lightweight.** The entire application binary is under 5MB. There are no bundled runtimes, no embedded browsers, no background services consuming your RAM. Kino launches in under a second.
+- **Predictable.** Every edit operation goes through the Command Pattern. This means the application state is always deterministic. If something goes wrong, the undo stack knows exactly how to reverse it.
+- **Educational.** The codebase is intentionally kept readable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as a real-world reference that goes far beyond tutorial-level complexity.
 
 ## Features
 
@@ -96,8 +111,8 @@ Kino/
 ## Getting Started
 
 **Requirements:**
-- macOS 14.0 Sonoma or later
-- Xcode 16.0 or later
+- macOS 12.0 Monterey or later
+- Xcode 15.0 or later
 - Apple Silicon recommended (Intel supported)
 
 **Build and Run:**
@@ -107,6 +122,35 @@ Kino/
 4. Press `Cmd + R`
 
 No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Space` | Play / Pause |
+| `Cmd + Z` | Undo |
+| `Cmd + Shift + Z` | Redo |
+| `Cmd + I` | Import Media |
+| `Cmd + S` | Save Project |
+| `Cmd + E` | Export Video |
+| `Delete` | Delete Selected Clip |
+
+## Roadmap
+
+Kino is under active development. Here is what is planned for future releases:
+
+| Status | Feature |
+|---|---|
+| Done | Multi-track timeline with drag-and-drop |
+| Done | Linked audio/video clips |
+| Done | Real-time waveform visualization |
+| Done | Hardware-accelerated playback engine |
+| Done | Video export pipeline |
+| Planned | Full undo/redo history |
+| Planned | Clip trimming and razor tool |
+| Planned | Video transitions and effects |
+| Planned | Text and title overlays |
+| Planned | Audio volume keyframing |
 
 ## License
 
@@ -128,6 +172,15 @@ Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya 
 Kebanyakan editor yang mengklaim "native" sebenarnya adalah kompromi lintas platform yang dibungkus tampilan macOS. Kino berbeda. Setiap baris kodenya ditulis secara spesifik untuk macOS dan Apple Silicon, memanfaatkan sepenuhnya akselerasi perangkat keras untuk decoding, rendering berbasis Metal, dan integrasi mendalam yang hanya bisa dilakukan oleh aplikasi native sejati.
 
 Hasilnya adalah editor yang terbuka dalam sekejap, merender tanpa patah-patah, dan menangani rekaman 4K sesuai kemampuan asli macOS.
+
+## Mengapa Kino
+
+Ada banyak editor video di luar sana. Berikut alasan Kino dibuat:
+
+- **Benar-benar native.** Bukan aplikasi web yang menyamar. Bukan wrapper Electron. Bukan port dari Qt. Kino adalah 100% SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Perilakunya seperti aplikasi Mac seharusnya: window snapping instan, dark mode bawaan, integrasi menu bar yang benar, dan dukungan Retina penuh tanpa konfigurasi tambahan.
+- **Ringan.** Seluruh binary aplikasi berukuran di bawah 5MB. Tidak ada runtime yang dibundel, tidak ada browser tertanam, tidak ada layanan latar belakang yang menghabiskan RAM Anda. Kino terbuka dalam waktu kurang dari satu detik.
+- **Dapat diprediksi.** Setiap operasi edit melewati Command Pattern. Artinya, state aplikasi selalu deterministik. Jika ada yang salah, tumpukan undo tahu persis cara membalikkannya.
+- **Edukatif.** Basis kode sengaja dijaga agar tetap mudah dibaca. Jika Anda sedang belajar SwiftUI, AVFoundation, atau arsitektur aplikasi macOS, proyek ini berfungsi sebagai referensi dunia nyata yang jauh melampaui kompleksitas level tutorial.
 
 ## Fitur
 
@@ -172,8 +225,8 @@ Kino/
 ## Cara Memulai
 
 **Persyaratan:**
-- macOS 14.0 Sonoma atau lebih baru
-- Xcode 16.0 atau lebih baru
+- macOS 12.0 Monterey atau lebih baru
+- Xcode 15.0 atau lebih baru
 - Apple Silicon direkomendasikan (Intel tetap didukung)
 
 **Build dan Jalankan:**
@@ -183,6 +236,35 @@ Kino/
 4. Tekan `Cmd + R`
 
 Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
+
+## Pintasan Keyboard
+
+| Pintasan | Aksi |
+|---|---|
+| `Space` | Putar / Jeda |
+| `Cmd + Z` | Batalkan (Undo) |
+| `Cmd + Shift + Z` | Ulangi (Redo) |
+| `Cmd + I` | Impor Media |
+| `Cmd + S` | Simpan Proyek |
+| `Cmd + E` | Ekspor Video |
+| `Delete` | Hapus Klip yang Dipilih |
+
+## Peta Jalan (Roadmap)
+
+Kino sedang dalam pengembangan aktif. Berikut rencana untuk rilis mendatang:
+
+| Status | Fitur |
+|---|---|
+| Selesai | Timeline multi-track dengan drag-and-drop |
+| Selesai | Klip audio/video yang tertaut |
+| Selesai | Visualisasi waveform real-time |
+| Selesai | Mesin playback terakselerasi perangkat keras |
+| Selesai | Pipeline ekspor video |
+| Direncanakan | Riwayat undo/redo penuh |
+| Direncanakan | Pemangkasan klip dan razor tool |
+| Direncanakan | Transisi dan efek video |
+| Direncanakan | Overlay teks dan judul |
+| Direncanakan | Keyframing volume audio |
 
 ## Lisensi
 
