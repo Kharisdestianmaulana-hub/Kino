@@ -122,7 +122,7 @@ public class PlaybackEngine {
                     var isStale = false
                     if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
                         _ = url.startAccessingSecurityScopedResource()
-                        if let img = CIImage(contentsOf: url) {
+                        if let data = try? Data(contentsOf: url), let img = CIImage(data: data) {
                             imageCache[assetRef.id] = img
                         }
                     }
@@ -157,7 +157,10 @@ public class PlaybackEngine {
         let duration = composition.duration
         
         if let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: duration) {
-            // Langsung assign videoComposition (akan re-trigger render graph)
+            // Force AVFoundation to re-render the paused frame by flushing the composition
+            if playerItem.videoComposition != nil {
+                playerItem.videoComposition = nil
+            }
             playerItem.videoComposition = videoComposition
         }
         
@@ -298,6 +301,9 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                         if opacity < 1.0 {
                             let filter = CIFilter(name: "CIColorMatrix")!
                             filter.setValue(img, forKey: kCIInputImageKey)
+                            filter.setValue(CIVector(x: opacity, y: 0, z: 0, w: 0), forKey: "inputRVector")
+                            filter.setValue(CIVector(x: 0, y: opacity, z: 0, w: 0), forKey: "inputGVector")
+                            filter.setValue(CIVector(x: 0, y: 0, z: opacity, w: 0), forKey: "inputBVector")
                             filter.setValue(CIVector(x: 0, y: 0, z: 0, w: opacity), forKey: "inputAVector")
                             if let outImg = filter.outputImage {
                                 img = outImg

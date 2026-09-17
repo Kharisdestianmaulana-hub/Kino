@@ -315,6 +315,10 @@ public class WorkspaceState: ObservableObject {
         timelineService.updateClip(clip, inTrack: trackID, inSequence: sequenceID)
         refreshProjectStateWithoutRebuildingPlayback()
         hasUnsavedChanges = true
+        
+        if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == sequenceID }) {
+            playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences)
+        }
     }
     
     public func previewPresentationOnly(transform: ClipTransform) {
@@ -326,6 +330,11 @@ public class WorkspaceState: ObservableObject {
             try commandManager.execute(command)
             refreshProjectStateWithoutRebuildingPlayback()
             hasUnsavedChanges = true
+            
+            if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == selectedSequenceID }) {
+                playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences)
+            }
+            
             if let proj = project {
                 DispatchQueue.global(qos: .background).async {
                     self.projectService.autosaveProject(proj)
