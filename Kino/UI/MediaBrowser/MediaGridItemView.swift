@@ -39,7 +39,7 @@ public struct MediaGridItemView: View {
                 
                 VStack {
                     Spacer()
-                    if asset.metadata.duration > 0 {
+                    if !asset.metadata.isImage && asset.metadata.duration > 0 {
                         HStack {
                             Spacer()
                             Text(formatDuration(asset.metadata.duration))
