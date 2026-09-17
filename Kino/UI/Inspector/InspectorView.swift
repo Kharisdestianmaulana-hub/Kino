@@ -25,6 +25,13 @@ public struct InspectorView: View {
                                 Text("Clip not found")
                                     .foregroundColor(.secondary)
                             }
+                        case .mediaAsset(let assetID):
+                            if let asset = workspace.project?.mediaReferences.first(where: { $0.id == assetID }) {
+                                mediaAssetProperties(for: asset)
+                            } else {
+                                Text("Media not found")
+                                    .foregroundColor(.secondary)
+                            }
                         default:
                             EmptyView()
                         }
@@ -193,6 +200,24 @@ struct InspectorSectionHeader: View {
             .fontWeight(.semibold)
             .foregroundColor(.secondary)
             .kerning(0.5)
+    }
+}
+
+    private func mediaAssetProperties(for asset: MediaAsset) -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("Media Asset")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                InspectorRow(title: "Name", value: asset.originalURL.lastPathComponent)
+                InspectorRow(title: "Type", value: asset.metadata.isImage ? "Photo" : "Video/Audio")
+                if !asset.metadata.isImage && asset.metadata.duration > 0 {
+                    let mins = Int(asset.metadata.duration) / 60
+                    let secs = Int(asset.metadata.duration) % 60
+                    InspectorRow(title: "Duration", value: String(format: "%02d:%02d", mins, secs))
+                }
+            }
+        }
     }
 }
 

@@ -60,8 +60,20 @@ public struct MediaGridItemView: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }
+        .padding(6)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(workspace.selection == .mediaAsset(asset.id) ? Color.accentColor.opacity(0.2) : Color.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(workspace.selection == .mediaAsset(asset.id) ? Color.accentColor : Color.clear, lineWidth: 2)
+        )
         .onHover { isHovering in
             if isHovering { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+        }
+        .onTapGesture {
+            workspace.selection = .mediaAsset(asset.id)
         }
         // Fallback jika Drag & Drop gagal di environment OS user:
         .contextMenu {
