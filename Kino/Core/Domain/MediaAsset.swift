@@ -31,8 +31,8 @@ public struct MediaMetadata: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.duration = try container.decode(Double.self, forKey: .duration)
-        self.hasVideo = try container.decode(Double.self, forKey: .hasVideo)
-        self.hasAudio = try container.decode(Double.self, forKey: .hasAudio)
+        self.hasVideo = try container.decode(Bool.self, forKey: .hasVideo)
+        self.hasAudio = try container.decode(Bool.self, forKey: .hasAudio)
         self.isImage = try container.decodeIfPresent(Bool.self, forKey: .isImage) ?? false
     }
 }
