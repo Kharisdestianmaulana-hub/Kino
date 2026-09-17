@@ -18,7 +18,9 @@
 <div align="center">
   <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
   <br/><br/>
-  <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
 </div>
 
 ---
