@@ -147,6 +147,24 @@ struct ClipInspectorView: View {
                             get: { textProperties?.fontSize ?? 100 },
                             set: { textProperties?.fontSize = $0 }
                         ), range: 10...500, suffix: "pt", multiplier: 1, onEditingChanged: commitTransform)
+                        
+                        ColorPicker("Color", selection: Binding(
+                            get: {
+                                if let hex = textProperties?.colorHex, let nsColor = NSColor(hex: hex) {
+                                    return Color(nsColor)
+                                }
+                                return .white
+                            },
+                            set: { newColor in
+                                guard let nsColor = NSColor(newColor).usingColorSpace(.deviceRGB) else { return }
+                                let r = Int(nsColor.redComponent * 255)
+                                let g = Int(nsColor.greenComponent * 255)
+                                let b = Int(nsColor.blueComponent * 255)
+                                let hex = String(format: "#%02X%02X%02X", r, g, b)
+                                textProperties?.colorHex = hex
+                                commitTransform(editing: false)
+                            }
+                        ))
                     }
                 }
                 
@@ -166,17 +184,19 @@ struct ClipInspectorView: View {
                 }
             }
             
-            Divider()
-                .opacity(0.5)
-            
-            VStack(alignment: .leading, spacing: 16) {
-                InspectorSectionHeader(title: "AUDIO")
+            if textProperties == nil {
+                Divider()
+                    .opacity(0.5)
                 
-                VStack(alignment: .leading, spacing: 12) {
-                    InspectorSliderField(title: "Volume", value: Binding(
-                        get: { Double(volume) },
-                        set: { volume = Float($0) }
-                    ), range: 0.0...2.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
+                VStack(alignment: .leading, spacing: 16) {
+                    InspectorSectionHeader(title: "AUDIO")
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        InspectorSliderField(title: "Volume", value: Binding(
+                            get: { Double(volume) },
+                            set: { volume = Float($0) }
+                        ), range: 0.0...2.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
+                    }
                 }
             }
         }

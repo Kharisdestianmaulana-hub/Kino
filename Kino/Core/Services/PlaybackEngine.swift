@@ -359,9 +359,13 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                     if var img = sourceImage {
                         // Center image to renderSize
                         let imgExtent = img.extent
-                        let scaleX = renderSize.width / imgExtent.width
-                        let scaleY = renderSize.height / imgExtent.height
-                        let baseScale = min(abs(scaleX), abs(scaleY))
+                        
+                        var baseScale: CGFloat = 1.0
+                        if clip.textProperties == nil {
+                            let scaleX = renderSize.width / imgExtent.width
+                            let scaleY = renderSize.height / imgExtent.height
+                            baseScale = min(abs(scaleX), abs(scaleY))
+                        }
                         
                         let scaledWidth = imgExtent.width * baseScale
                         let scaledHeight = imgExtent.height * baseScale
