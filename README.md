@@ -6,6 +6,16 @@
 
 ---
 
+### Screenshots
+
+<div align="center">
+  <img src="Screenshots/Screenshot1.png" alt="Kino Editor - Main Workspace" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/Screenshot2.png" alt="Kino Editor - Timeline & Playback" width="800"/>
+</div>
+
+---
+
 ## 🇬🇧 English Version
 
 Kino is a powerful, highly optimized native macOS non-linear video editing application. It was built completely from the ground up using modern Apple frameworks such as **SwiftUI**, **AVFoundation**, and **CoreImage**. 
