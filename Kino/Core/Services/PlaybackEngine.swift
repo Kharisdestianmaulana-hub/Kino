@@ -12,7 +12,7 @@ public class PlaybackEngine {
     public init() {}
     
     @MainActor
-    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset]) async -> AVPlayerItem? {
+    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset], isExport: Bool = false) async -> AVPlayerItem? {
         let composition = AVMutableComposition()
         composition.naturalSize = CGSize(width: 1920, height: 1080)
         let renderSize = CGSize(width: 1920, height: 1080)
@@ -64,6 +64,15 @@ public class PlaybackEngine {
                     print("[PlaybackEngine] Error inserting track \(trackIndex) clip \(i): \(error)")
                 }
             }
+        }
+        
+                if !isExport {
+            let padDuration = CMTime(seconds: 36000, preferredTimescale: 600)
+            let padRange = CMTimeRange(start: maxTimelineDuration, duration: padDuration)
+            for track in composition.tracks(withMediaType: .video) {
+                track.insertEmptyTimeRange(padRange)
+            }
+            maxTimelineDuration = CMTimeAdd(maxTimelineDuration, padDuration)
         }
         
         let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: maxTimelineDuration)

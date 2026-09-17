@@ -379,7 +379,9 @@ public class WorkspaceState: ObservableObject {
     
     // MARK: - Export
     public func startExport() {
-        guard let item = currentCompositionItem, let project = project else { return }
+                guard let project = project,
+              let seqID = selectedSequenceID,
+              let seq = project.sequences.first(where: { $0.id == seqID }) else { return }
         
         let panel = NSSavePanel()
         panel.allowedContentTypes = [UTType.mpeg4Movie]
@@ -391,6 +393,7 @@ public class WorkspaceState: ObservableObject {
             
             Task {
                 do {
+                    guard let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, isExport: true) else { return }
                     try await exportService.export(item: item, to: url) { progress in
                         DispatchQueue.main.async {
                             self.exportProgress = progress
