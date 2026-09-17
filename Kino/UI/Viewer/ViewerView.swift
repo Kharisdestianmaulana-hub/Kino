@@ -75,14 +75,12 @@ public struct ViewerView: View {
                             }
                         }
                         .frame(width: canvasRect.width, height: canvasRect.height)
-                        // SwiftUI transform HANYA aktif selama drag untuk instant feedback
-                        // Setelah commit (localDragTransform == nil), CoreImage yang handle → identity
-                        .scaleEffect(localDragTransform != nil ? CGFloat(activePresentationState.transform.scale) : 1.0)
-                        .rotationEffect(.degrees(localDragTransform != nil ? activePresentationState.transform.rotation : 0))
-                        .position(
-                            x: canvasRect.midX + (localDragTransform != nil ? CGFloat(activePresentationState.transform.positionX) : 0),
-                            y: canvasRect.midY + (localDragTransform != nil ? CGFloat(activePresentationState.transform.positionY) : 0)
-                        )
+                        // Delta transform: rasio antara target vs yang sudah di-render CoreImage
+                        // Selama drag, model TIDAK di-update, jadi previewPresentationState = nilai lama
+                        // SwiftUI mengkompensasi selisihnya → instan & akurat
+                        .scaleEffect(relativeScale)
+                        .rotationEffect(.degrees(relativeRotation))
+                        .offset(x: relativeOffsetX, y: relativeOffsetY)
                         .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                     
@@ -188,6 +186,34 @@ public struct ViewerView: View {
             return .identity
         }
         return workspace.previewPresentationState
+    }
+    
+    // Relatif = selisih antara target drag vs yang sudah di-render CoreImage
+    // Karena preview() TIDAK memanggil previewUpdateClipProperties,
+    // workspace.previewPresentationState tetap di nilai LAMA selama drag.
+    // Saat tidak drag: target == rendered → rasio 1.0, offset 0
+    
+    private var relativeScale: CGFloat {
+        guard localDragTransform != nil else { return 1.0 }
+        let target = activePresentationState.transform.scale
+        let rendered = workspace.previewPresentationState.transform.scale
+        guard rendered > 0.001 else { return CGFloat(target) }
+        return CGFloat(target / rendered)
+    }
+    
+    private var relativeRotation: Double {
+        guard localDragTransform != nil else { return 0 }
+        return activePresentationState.transform.rotation - workspace.previewPresentationState.transform.rotation
+    }
+    
+    private var relativeOffsetX: CGFloat {
+        guard localDragTransform != nil else { return 0 }
+        return CGFloat(activePresentationState.transform.positionX - workspace.previewPresentationState.transform.positionX)
+    }
+    
+    private var relativeOffsetY: CGFloat {
+        guard localDragTransform != nil else { return 0 }
+        return CGFloat(activePresentationState.transform.positionY - workspace.previewPresentationState.transform.positionY)
     }
     
     
