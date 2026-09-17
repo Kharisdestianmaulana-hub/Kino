@@ -67,16 +67,6 @@ public struct MainWorkspaceView: View {
                     if workspace.isSaving {
                         SavingIndicatorView()
                     }
-                    
-                    Button(action: {
-                        workspace.addTextClip()
-                    }) {
-                        Image(systemName: "textformat")
-                        Text("Text")
-                    }
-                    .keyboardShortcut("t", modifiers: .command)
-                    .help("Add Text Clip (Cmd+T)")
-                    
                     Button(action: {
                         workspace.startExport()
                     }) {

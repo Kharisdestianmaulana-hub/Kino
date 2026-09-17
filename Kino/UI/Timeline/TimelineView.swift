@@ -47,6 +47,15 @@ public struct TimelineView: View {
                         Button(action: {}) { Image(systemName: "ruler") }
                             .buttonStyle(BorderlessButtonStyle())
                             .help("Toggle Snapping (N)")
+                            
+                        Divider().frame(height: 14)
+                        
+                        Button(action: { workspace.addTextClip() }) { 
+                            Image(systemName: "textformat") 
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .keyboardShortcut("t", modifiers: .command)
+                        .help("Add Text Clip (Cmd+T)")
                     }
                 }
                 .padding(.trailing, 8)
