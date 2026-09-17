@@ -165,7 +165,6 @@ public struct ClipView: View {
             .padding(4)
         }
         .frame(width: max(CGFloat(currentDuration) * timeScale, 5))
-        .offset(x: (CGFloat(currentTimelineStart) * timeScale) + dragOffset)
         .overlay(
             ZStack {
                 // Selection Border
@@ -235,6 +234,8 @@ public struct ClipView: View {
         .task {
             await loadThumbnail()
         }
+        .offset(x: (CGFloat(currentTimelineStart) * timeScale) + dragOffset)
+
         .simultaneousGesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .named("TrackSpace"))
                 .onChanged { value in
