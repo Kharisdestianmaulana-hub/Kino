@@ -83,6 +83,7 @@ public struct ViewerView: View {
                         .offset(x: relativeOffsetX, y: relativeOffsetY)
                         .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
+                        .clipped() // Potong VIDEO saja agar tidak menutupi panel UI lain
                     
                     if let img = previewImage {
                         // Tutupi layar dengan hitam agar video asli yang tertinggal di belakang tidak tembus pandang
@@ -91,10 +92,10 @@ public struct ViewerView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                     } else {
+                        // Overlay TIDAK di-clip → outline & handle tetap bisa dijangkau
                         ViewerTransformOverlay(localDragTransform: $localDragTransform)
                     }
                 }
-                .clipped() // Potong konten yang meluap agar tidak menutupi panel UI lain
             }
             
             HStack(spacing: 24) {
