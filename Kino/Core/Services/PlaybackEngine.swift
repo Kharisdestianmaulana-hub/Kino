@@ -121,9 +121,12 @@ public class PlaybackEngine {
                 if assetRef.metadata.isImage, imageCache[assetRef.id] == nil, let bookmark = assetRef.bookmarkData {
                     var isStale = false
                     if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
-                        _ = url.startAccessingSecurityScopedResource()
+                        let isScoped = url.startAccessingSecurityScopedResource()
                         if let data = try? Data(contentsOf: url), let img = CIImage(data: data) {
                             imageCache[assetRef.id] = img
+                        }
+                        if isScoped {
+                            url.stopAccessingSecurityScopedResource()
                         }
                     }
                 }
@@ -156,12 +159,52 @@ public class PlaybackEngine {
         let renderSize = CGSize(width: 1920, height: 1080)
         let duration = composition.duration
         
-        if let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: duration) {
-            // Force AVFoundation to re-render the paused frame by flushing the composition
-            if playerItem.videoComposition != nil {
-                playerItem.videoComposition = nil
+        let videoTracks = sequence.tracks.filter { $0.type == .video }
+        let compVideoTracks = composition.tracks(withMediaType: .video)
+        
+        if compVideoTracks.count == videoTracks.count {
+            var imageCache: [UUID: CIImage] = [:]
+            for videoTrack in videoTracks {
+                for clip in videoTrack.clips {
+                    guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
+                    if assetRef.metadata.isImage, imageCache[assetRef.id] == nil, let bookmark = assetRef.bookmarkData {
+                        var isStale = false
+                        if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
+                            let isScoped = url.startAccessingSecurityScopedResource()
+                            if let data = try? Data(contentsOf: url), let img = CIImage(data: data) {
+                                imageCache[assetRef.id] = img
+                            }
+                            if isScoped {
+                                url.stopAccessingSecurityScopedResource()
+                            }
+                        }
+                    }
+                }
             }
-            playerItem.videoComposition = videoComposition
+            
+            let compTrackIDs = compVideoTracks.map { $0.trackID }
+            let instruction = KinoVideoCompositionInstruction(
+                timeRange: CMTimeRange(start: .zero, duration: duration),
+                videoTracks: videoTracks,
+                compTrackIDs: compTrackIDs,
+                mediaReferences: mediaReferences,
+                imageCache: imageCache,
+                renderSize: renderSize
+            )
+            
+            if let current = playerItem.videoComposition as? AVMutableVideoComposition {
+                current.instructions = [instruction]
+                // Toggle to force re-render of paused frame
+                playerItem.videoComposition = nil
+                playerItem.videoComposition = current
+            } else {
+                let videoComposition = AVMutableVideoComposition()
+                videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
+                videoComposition.renderSize = renderSize
+                videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
+                videoComposition.instructions = [instruction]
+                playerItem.videoComposition = videoComposition
+            }
         }
         
         // Update Audio

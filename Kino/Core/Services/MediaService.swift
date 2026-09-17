@@ -10,18 +10,20 @@ public class MediaService {
     public func createMediaAsset(from originalURL: URL) throws -> MediaAsset {
         // Create security-scoped bookmark to persist access across app restarts
         var bookmarkData: Data? = nil
+        var isImage = false
         do {
             let isSecurityScoped = originalURL.startAccessingSecurityScopedResource()
             bookmarkData = try originalURL.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+            
+            let type = try? originalURL.resourceValues(forKeys: [.contentTypeKey]).contentType
+            isImage = type?.conforms(to: .image) ?? false
+            
             if isSecurityScoped {
                 originalURL.stopAccessingSecurityScopedResource()
             }
         } catch {
             print("Failed to create bookmark: \(error)")
         }
-        
-        let type = try? originalURL.resourceValues(forKeys: [.contentTypeKey]).contentType
-        let isImage = type?.conforms(to: .image) ?? false
         
         // Read metadata using AVFoundation
         let asset = AVURLAsset(url: originalURL)
