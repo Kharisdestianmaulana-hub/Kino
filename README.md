@@ -146,8 +146,9 @@ Kino is under active development. Here is what is planned for future releases:
 | Done | Real-time waveform visualization |
 | Done | Hardware-accelerated playback engine |
 | Done | Video export pipeline |
-| Planned | Full undo/redo history |
-| Planned | Clip trimming and razor tool |
+| Done | Full undo/redo history |
+| Done | Razor / Blade tool (Split clips) |
+| Planned | Clip edge trimming (Drag to resize) |
 | Planned | Video transitions and effects |
 | Planned | Text and title overlays |
 | Planned | Audio volume keyframing |
@@ -260,8 +261,9 @@ Kino sedang dalam pengembangan aktif. Berikut rencana untuk rilis mendatang:
 | Selesai | Visualisasi waveform real-time |
 | Selesai | Mesin playback terakselerasi perangkat keras |
 | Selesai | Pipeline ekspor video |
-| Direncanakan | Riwayat undo/redo penuh |
-| Direncanakan | Pemangkasan klip dan razor tool |
+| Selesai | Riwayat undo/redo penuh |
+| Selesai | Alat pemotong / Razor tool (Split klip) |
+| Direncanakan | Pemangkasan ujung klip (Clip trimming) |
 | Direncanakan | Transisi dan efek video |
 | Direncanakan | Overlay teks dan judul |
 | Direncanakan | Keyframing volume audio |
