@@ -63,7 +63,6 @@ public class PlaybackEngine {
                         if endTime > maxTimelineDuration {
                             maxTimelineDuration = endTime
                         }
-                    }
                         // Note: Untuk merender foto secara utuh dalam AVVideoComposition biasa,
                         // kita butuh CALayer (AVVideoCompositionCoreAnimationTool) atau Custom Compositor.
                         // Karena arsitektur sekarang menggunakan layerInstructions murni,
