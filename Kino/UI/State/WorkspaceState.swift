@@ -117,7 +117,7 @@ public class WorkspaceState: ObservableObject {
               let videoTrack = seq.tracks.first(where: { $0.type == .video }) else { return }
         
         let textProps = TextProperties()
-        let clip = Clip(textProperties: textProps, timelineStart: currentTime, sourceStart: 0, duration: 5.0)
+        let clip = Clip(textProperties: textProps, timelineStart: playheadPosition, sourceStart: 0, duration: 5.0)
         let cmd = AddClipCommand(service: timelineService, sequenceID: seqID, trackID: videoTrack.id, clip: clip)
         execute(cmd)
     }
