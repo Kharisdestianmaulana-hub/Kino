@@ -148,7 +148,7 @@ Kino is under active development. Here is what is planned for future releases:
 | Done | Video export pipeline |
 | Done | Full undo/redo history |
 | Done | Razor / Blade tool (Split clips) |
-| Planned | Clip edge trimming (Drag to resize) |
+| Done | Clip edge trimming (Drag to resize) |
 | Planned | Video transitions and effects |
 | Planned | Text and title overlays |
 | Planned | Audio volume keyframing |
@@ -263,7 +263,7 @@ Kino sedang dalam pengembangan aktif. Berikut rencana untuk rilis mendatang:
 | Selesai | Pipeline ekspor video |
 | Selesai | Riwayat undo/redo penuh |
 | Selesai | Alat pemotong / Razor tool (Split klip) |
-| Direncanakan | Pemangkasan ujung klip (Clip trimming) |
+| Selesai | Pemangkasan ujung klip (Clip trimming) |
 | Direncanakan | Transisi dan efek video |
 | Direncanakan | Overlay teks dan judul |
 | Direncanakan | Keyframing volume audio |
