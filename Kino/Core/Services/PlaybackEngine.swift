@@ -24,6 +24,15 @@ public class PlaybackEngine {
             let compVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
             
             for (i, clip) in videoTrack.clips.enumerated() {
+                if clip.textProperties != nil {
+                    let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
+                    let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
+                    compVideoTrack?.insertEmptyTimeRange(CMTimeRange(start: targetTime, duration: duration))
+                    let endTime = CMTimeAdd(targetTime, duration)
+                    if endTime > maxTimelineDuration { maxTimelineDuration = endTime }
+                    continue
+                }
+                
                 guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
                 guard let bookmark = assetRef.bookmarkData else { continue }
                 
