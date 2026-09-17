@@ -24,17 +24,26 @@ public class SplitClipCommand: Command {
         self.leftClip = Clip(
             id: UUID(),
             mediaAssetID: originalClip.mediaAssetID,
+            textProperties: originalClip.textProperties,
             timelineStart: originalClip.timelineStart,
             sourceStart: originalClip.sourceStart,
-            duration: splitDuration
+            duration: splitDuration,
+            transform: originalClip.transform,
+            volume: originalClip.volume,
+            linkedClipID: originalClip.linkedClipID
         )
         
         self.rightClip = Clip(
             id: UUID(),
             mediaAssetID: originalClip.mediaAssetID,
+            textProperties: originalClip.textProperties,
             timelineStart: splitTime,
             sourceStart: originalClip.sourceStart + splitDuration,
-            duration: originalClip.duration - splitDuration
+            duration: originalClip.duration - splitDuration,
+            transform: originalClip.transform,
+            volume: originalClip.volume,
+            // Jika ada link audio/video, jangan link ID yang sama untuk kedua belahan karena linkedClipID juga dibelah
+            linkedClipID: nil 
         )
     }
     

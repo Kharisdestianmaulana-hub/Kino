@@ -95,7 +95,11 @@ public struct ViewerView: View {
                             .aspectRatio(contentMode: .fit)
                     } else {
                         // Overlay TIDAK di-clip → outline & handle tetap bisa dijangkau
-                        ViewerTransformOverlay(localDragTransform: $localDragTransform)
+                        ViewerTransformOverlay(
+                            localDragTransform: $localDragTransform,
+                            lagMaskingTransform: $lagMaskingTransform,
+                            lagMaskingStartTransform: $lagMaskingStartTransform
+                        )
                     }
                 }
             }
@@ -302,6 +306,8 @@ public struct ViewerView: View {
 
 private struct ViewerTransformOverlay: View {
     @Binding var localDragTransform: ClipTransform?
+    @Binding var lagMaskingTransform: ClipTransform?
+    @Binding var lagMaskingStartTransform: ClipTransform?
     @EnvironmentObject var workspace: WorkspaceState
     @State private var interaction: ViewerTransformInteraction?
     @State private var currentDragTransform: ClipTransform?

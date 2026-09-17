@@ -16,9 +16,26 @@ public struct ClipTransform: Codable, Equatable {
     }
 }
 
+public struct TextProperties: Codable, Equatable {
+    public var text: String
+    public var fontName: String
+    public var fontSize: Double
+    public var colorHex: String
+    public var alignment: Int // 0: left, 1: center, 2: right
+    
+    public init(text: String = "Basic Text", fontName: String = "Helvetica", fontSize: Double = 150, colorHex: String = "#FFFFFF", alignment: Int = 1) {
+        self.text = text
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.colorHex = colorHex
+        self.alignment = alignment
+    }
+}
+
 public struct Clip: Codable, Identifiable, Equatable {
     public let id: UUID
-    public var mediaAssetID: UUID
+    public var mediaAssetID: UUID?
+    public var textProperties: TextProperties?
     
     /// The start time of the clip on the track's timeline (in seconds).
     public var timelineStart: Double
@@ -38,9 +55,10 @@ public struct Clip: Codable, Identifiable, Equatable {
     /// ID of a linked clip (e.g. linked audio track)
     public var linkedClipID: UUID?
 
-    public init(id: UUID = UUID(), mediaAssetID: UUID, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), volume: Float = 1.0, linkedClipID: UUID? = nil) {
+    public init(id: UUID = UUID(), mediaAssetID: UUID? = nil, textProperties: TextProperties? = nil, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), volume: Float = 1.0, linkedClipID: UUID? = nil) {
         self.id = id
         self.mediaAssetID = mediaAssetID
+        self.textProperties = textProperties
         self.timelineStart = timelineStart
         self.sourceStart = sourceStart
         self.duration = duration
@@ -53,7 +71,8 @@ public struct Clip: Codable, Identifiable, Equatable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(UUID.self, forKey: .id)
-        self.mediaAssetID = try container.decode(UUID.self, forKey: .mediaAssetID)
+        self.mediaAssetID = try container.decodeIfPresent(UUID.self, forKey: .mediaAssetID)
+        self.textProperties = try container.decodeIfPresent(TextProperties.self, forKey: .textProperties)
         self.timelineStart = try container.decode(Double.self, forKey: .timelineStart)
         self.sourceStart = try container.decode(Double.self, forKey: .sourceStart)
         self.duration = try container.decode(Double.self, forKey: .duration)
