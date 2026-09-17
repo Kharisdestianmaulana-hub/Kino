@@ -38,25 +38,37 @@ public class PlaybackEngine {
                 
                 do {
                     let sourceTime = CMTime(seconds: clip.sourceStart, preferredTimescale: 600)
-                    let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
-                    let timeRange = CMTimeRange(start: sourceTime, duration: duration)
                     let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
                     
                     if let sourceTrack = avAsset.tracks(withMediaType: .video).first {
-                        try compVideoTrack?.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
+                        let maxAvailableDuration = sourceTrack.timeRange.duration.seconds - sourceTime.seconds
+                        let safeDuration = min(clip.duration, maxAvailableDuration)
+                        
+                        if safeDuration > 0 {
+                            let duration = CMTime(seconds: safeDuration, preferredTimescale: 600)
+                            let timeRange = CMTimeRange(start: sourceTime, duration: duration)
+                            try compVideoTrack?.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
+                            
+                            let endTime = CMTimeAdd(targetTime, duration)
+                            if endTime > maxTimelineDuration {
+                                maxTimelineDuration = endTime
+                            }
+                        }
                     } else if assetRef.metadata.isImage {
+                        let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
                         // Jika ini foto, sisipkan empty time range agar track komposisi tetap punya durasi
                         compVideoTrack?.insertEmptyTimeRange(CMTimeRange(start: targetTime, duration: duration))
+                        
+                        let endTime = CMTimeAdd(targetTime, duration)
+                        if endTime > maxTimelineDuration {
+                            maxTimelineDuration = endTime
+                        }
+                    }
                         // Note: Untuk merender foto secara utuh dalam AVVideoComposition biasa,
                         // kita butuh CALayer (AVVideoCompositionCoreAnimationTool) atau Custom Compositor.
                         // Karena arsitektur sekarang menggunakan layerInstructions murni,
                         // foto belum bisa dirender tanpa Custom Compositor. 
                         // TODO: Pindah ke Custom Compositor untuk mendukung gambar dan teks penuh.
-                    }
-                    
-                    let endTime = CMTimeAdd(targetTime, duration)
-                    if endTime > maxTimelineDuration {
-                        maxTimelineDuration = endTime
                     }
                 } catch {
                     print("[PlaybackEngine] Error inserting track \(trackIndex) clip \(i): \(error)")
@@ -125,6 +137,7 @@ public class PlaybackEngine {
             let compTrack = compVideoTracks[trackIndex]
             let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compTrack)
             
+            
             for clip in videoTrack.clips {
                 guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
                 guard let bookmark = assetRef.bookmarkData else { continue }
@@ -165,10 +178,6 @@ public class PlaybackEngine {
                 
                 layerInstruction.setTransform(finalTransform, at: targetTime)
                 layerInstruction.setOpacity(Float(clip.transform.opacity), at: targetTime)
-                
-                // Opacity harus di-nol-kan setelah durasi clip habis agar tidak terus merender frame terakhirnya di atas klip lain
-                let endTime = CMTimeAdd(targetTime, CMTime(seconds: clip.duration, preferredTimescale: 600))
-                layerInstruction.setOpacity(0.0, at: endTime)
             }
             allLayerInstructions.append(layerInstruction)
         }
