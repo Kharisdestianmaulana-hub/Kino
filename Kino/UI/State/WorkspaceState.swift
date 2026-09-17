@@ -366,6 +366,17 @@ public class WorkspaceState: ObservableObject {
         }
     }
     
+        public func deleteMediaAsset(_ asset: MediaAsset) {
+        if var project = self.project {
+            project.mediaReferences.removeAll(where: { $0.id == asset.id })
+            projectService.updateCurrentProject(project)
+            refreshState()
+            if selection == .mediaAsset(asset.id) {
+                selection = .none
+            }
+        }
+    }
+    
     // MARK: - Export
     public func startExport() {
         guard let item = currentCompositionItem, let project = project else { return }

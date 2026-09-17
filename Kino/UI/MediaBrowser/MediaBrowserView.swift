@@ -59,13 +59,6 @@ public struct MediaBrowserView: View {
                                     .onTapGesture {
                                         workspace.selection = .mediaAsset(asset.id)
                                     }
-                                    .contextMenu {
-                                        Button(role: .destructive) {
-                                            deleteMedia(asset)
-                                        } label: {
-                                            Label("Delete Media", systemImage: "trash")
-                                        }
-                                    }
                             }
                         }
                         .padding(12)
@@ -109,23 +102,6 @@ public struct MediaBrowserView: View {
                         print("Failed to import \(url): \(error)")
                     }
                 }
-            }
-        }
-    }
-    
-    private func deleteMedia(_ asset: MediaAsset) {
-        if var project = workspace.project {
-            // Remove from references
-            project.mediaReferences.removeAll(where: { $0.id == asset.id })
-            
-            // Note: If you want to delete clips referencing this media, you would loop through sequences here.
-            // For now, just removing the reference will render it blank (which is normal for deleted media).
-            
-            workspace.projectService.updateCurrentProject(project)
-            workspace.refreshState()
-            
-            if workspace.selection == .mediaAsset(asset.id) {
-                workspace.selection = .none
             }
         }
     }

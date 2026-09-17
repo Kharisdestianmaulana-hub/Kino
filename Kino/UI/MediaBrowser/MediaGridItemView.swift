@@ -68,6 +68,11 @@ public struct MediaGridItemView: View {
             Button("Add to Timeline") {
                 workspace.appendAssetToTimeline(asset)
             }
+            Button(role: .destructive) {
+                workspace.deleteMediaAsset(asset)
+            } label: {
+                Label("Delete Media", systemImage: "trash")
+            }
         }
         .task {
             await loadThumbnail()
