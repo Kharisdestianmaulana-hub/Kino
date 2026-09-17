@@ -1,0 +1,118 @@
+--- Kino/Core/Services/PlaybackEngine.swift
++++ Kino/Core/Services/PlaybackEngine.swift
+@@ -29,56 +29,91 @@
+         let renderSize = CGSize(width: 1920, height: 1080) // Default HD
+         
+         // --- PROSES VIDEO TRACK ---
+-        if let videoTrack = sequence.tracks.first(where: { $0.type == .video }) {
+-            let sortedClips = videoTrack.clips.sorted(by: { $0.timelineStart < $1.timelineStart })
+-            print("[PlaybackEngine] Video track found. Clips count: \(sortedClips.count). MediaRefs count: \(mediaReferences.count)")
++        let videoTracks = sequence.tracks.filter { $0.type == .video }
++        var instructions: [AVMutableVideoCompositionInstruction] = []
++        var timeRanges: [CMTimeRange] = [] // Untuk menyimpan seluruh rentang waktu klip
++        
++        for (trackIndex, videoTrack) in videoTracks.enumerated() {
++            let compVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
+             
+-            for (i, clip) in sortedClips.enumerated() {
++            for clip in videoTrack.clips {
+                 guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else {
+-                    print("[PlaybackEngine] Clip \(i): No mediaRef found for assetID=\(clip.mediaAssetID)")
+                     continue
+                 }
+                 guard let bookmark = assetRef.bookmarkData else {
+-                    print("[PlaybackEngine] Clip \(i): bookmarkData is nil")
+                     continue
+                 }
+                 
+                 var isStale = false
+                 guard let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) else {
+-                    print("[PlaybackEngine] Clip \(i): Failed to resolve bookmark")
+                     continue
+                 }
+                 let accessed = url.startAccessingSecurityScopedResource()
+-                print("[PlaybackEngine] Clip \(i): URL=\(url.lastPathComponent), accessed=\(accessed), isStale=\(isStale)")
+                 
+                 let avAsset = AVURLAsset(url: url)
+                 do {
+                     if let sourceTrack = avAsset.tracks(withMediaType: .video).first {
+                         let sourceTime = CMTime(seconds: clip.sourceStart, preferredTimescale: 600)
+                         let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
+                         let timeRange = CMTimeRange(start: sourceTime, duration: duration)
+                         let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
+                         
+                         try compVideoTrack?.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
+                         
+-                        // FIX BLACK SCREEN PADA AVPLAYER MURNI:
+-                        // AVMutableCompositionTrack tidak menyalin preferredTransform secara otomatis.
+-                        // Kita hitung ulang transform-nya agar video Aspect-Fit sempurna ke ukuran 1920x1080 (seperti overlay).
+-                        if i == 0 {
+-                            let sourceSize = sourceTrack.naturalSize
+-                            let sourceTransform = sourceTrack.preferredTransform
+-                            let extent = CGRect(origin: .zero, size: sourceSize).applying(sourceTransform)
+-                            
+-                            let renderW: CGFloat = 1920.0
+-                            let renderH: CGFloat = 1080.0
+-                            
+-                            let scaleX = renderW / extent.width
+-                            let scaleY = renderH / extent.height
+-                            let minScale = min(scaleX, scaleY)
+-                            
+-                            let scaledW = extent.width * minScale
+-                            let scaledH = extent.height * minScale
+-                            let tx = (renderW - scaledW) / 2.0 - extent.minX * minScale
+-                            let ty = (renderH - scaledH) / 2.0 - extent.minY * minScale
+-                            
+-                            var finalTransform = sourceTransform
+-                            finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: minScale, y: minScale))
+-                            finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: tx, y: ty))
+-                            
+-                            compVideoTrack?.preferredTransform = finalTransform
+-                        }
++                        timeRanges.append(CMTimeRange(start: targetTime, duration: duration))
++                        
++                        // Buat Layer Instruction untuk Video Composition
++                        let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compVideoTrack!)
++                        
++                        // Hitung aspect fit transform dasar
++                        let sourceSize = sourceTrack.naturalSize
++                        let sourceTransform = sourceTrack.preferredTransform
++                        let extent = CGRect(origin: .zero, size: sourceSize).applying(sourceTransform)
++                        let renderW: CGFloat = 1920.0
++                        let renderH: CGFloat = 1080.0
++                        let scaleX = renderW / extent.width
++                        let scaleY = renderH / extent.height
++                        let minScale = min(scaleX, scaleY)
++                        let scaledW = extent.width * minScale
++                        let scaledH = extent.height * minScale
++                        let tx = (renderW - scaledW) / 2.0 - extent.minX * minScale
++                        let ty = (renderH - scaledH) / 2.0 - extent.minY * minScale
++                        
++                        var baseTransform = sourceTransform
++                        baseTransform = baseTransform.concatenating(CGAffineTransform(scaleX: minScale, y: minScale))
++                        baseTransform = baseTransform.concatenating(CGAffineTransform(translationX: tx, y: ty))
++                        
++                        // Tambahkan transform dari Clip (posisi dan skala yang diedit user)
++                        let userTransform = clip.transform
++                        // Koordinat AVFoundation terbalik di sumbu Y (0,0 di bawah kiri)
++                        // Kita harus hati-hati, untuk sekarang kita terapkan translasi sederhana dan scale
++                        let cx = renderW / 2.0
++                        let cy = renderH / 2.0
++                        var finalTransform = baseTransform
++                        finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: -cx, y: -cy))
++                        finalTransform = finalTransform.concatenating(CGAffineTransform(scaleX: CGFloat(userTransform.scale), y: CGFloat(userTransform.scale)))
++                        // PENTING: Sumbu Y AVFoundation terbalik, jadi positionY harus dibalik
++                        finalTransform = finalTransform.concatenating(CGAffineTransform(translationX: cx + CGFloat(userTransform.positionX), y: cy - CGFloat(userTransform.positionY)))
++                        
++                        layerInstruction.setTransform(finalTransform, at: .zero)
++                        
++                        let instruction = AVMutableVideoCompositionInstruction()
++                        instruction.timeRange = CMTimeRange(start: targetTime, duration: duration)
++                        instruction.layerInstructions = [layerInstruction]
++                        instructions.append(instruction)
+                     }
+                 } catch {
+                     print("[PlaybackEngine] Error inserting video track: \(error)")
+                 }
+             }
+         }

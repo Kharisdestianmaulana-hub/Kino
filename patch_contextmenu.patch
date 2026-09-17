@@ -1,0 +1,35 @@
+--- Kino/UI/Timeline/ClipView.swift
++++ Kino/UI/Timeline/ClipView.swift
+@@ -215,5 +215,31 @@
+                     }
+                 }
+         )
++        .contextMenu {
++            if clip.linkedClipID != nil {
++                Button("Unlink Clip") {
++                    if let seqID = workspace.selectedSequenceID,
++                       let seq = workspace.project?.sequences.first(where: { $0.id == seqID }),
++                       let track = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == clip.id }) }) {
++                        
++                        var newClip = clip
++                        newClip.linkedClipID = nil
++                        
++                        var commands: [Command] = [
++                            ModifyClipPropertiesCommand(service: workspace.timelineService, sequenceID: seqID, trackID: track.id, oldClip: clip, newClip: newClip)
++                        ]
++                        
++                        if let linkedID = clip.linkedClipID,
++                           let linkedTrack = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == linkedID }) }),
++                           var linkedClip = linkedTrack.clips.first(where: { $0.id == linkedID }) {
++                            let oldLinkedClip = linkedClip
++                            linkedClip.linkedClipID = nil
++                            commands.append(ModifyClipPropertiesCommand(service: workspace.timelineService, sequenceID: seqID, trackID: linkedTrack.id, oldClip: oldLinkedClip, newClip: linkedClip))
++                        }
++                        
++                        workspace.execute(CompositeCommand(name: "Unlink Clips", commands: commands))
++                    }
++                }
++            }
++        }
+     }
+ }

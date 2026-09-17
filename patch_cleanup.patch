@@ -1,0 +1,108 @@
+--- Kino/Core/Services/PlaybackEngine.swift
++++ Kino/Core/Services/PlaybackEngine.swift
+@@ -171,96 +171,11 @@
+         
+         let playerItem = AVPlayerItem(asset: composition)
+         
+-        // Buat Video Composition menggunakan CoreImage (Paling stabil, anti-gap, anti-black screen)
+-        let videoComp = AVMutableVideoComposition(asset: composition) { request in
+-            let time = request.compositionTime
+-            
+-            // Cari klip mana yang sedang aktif
+-            var activeClip: Clip?
+-            if let videoTrack = sequence.tracks.first(where: { $0.type == .video }) {
+-                activeClip = videoTrack.clips.first(where: {
+-                    let start = CMTime(seconds: $0.timelineStart, preferredTimescale: 600)
+-                    let end = CMTime(seconds: $0.timelineStart + $0.duration, preferredTimescale: 600)
+-                    return time >= start && time < end
+-                })
+-            }
+-            
+-            var image = request.sourceImage
+-            let extent = image.extent
+-            
+-            // Hindari render jika extent tidak valid
+-            if !extent.isEmpty && !extent.isInfinite {
+-                
+-                // 1. Normalisasi Video Asli ke tengah layar 1920x1080 (Aspect Fit)
+-                let renderW: CGFloat = 1920.0
+-                let renderH: CGFloat = 1080.0
+-                
+-                let scaleX = renderW / extent.width
+-                let scaleY = renderH / extent.height
+-                let baseScale = min(scaleX, scaleY) // Aspect Fit
+-                
+-                // Geser koordinat aneh (jika ada) ke 0,0
+-                var baseTransform = CGAffineTransform(translationX: -extent.origin.x, y: -extent.origin.y)
+-                // Skala agar muat di layar
+-                baseTransform = baseTransform.scaledBy(x: baseScale, y: baseScale)
+-                
+-                // Geser ke tengah layar
+-                let scaledWidth = extent.width * baseScale
+-                let scaledHeight = extent.height * baseScale
+-                let offsetX = (renderW - scaledWidth) / 2.0
+-                let offsetY = (renderH - scaledHeight) / 2.0
+-                
+-                // Terapkan ke baseTransform (karena matriks berantai, kita pakai matematika yang sudah dinormalisasi)
+-                // Agar aman, kita apply dulu transform dasar
+-                image = image.transformed(by: baseTransform)
+-                image = image.transformed(by: CGAffineTransform(translationX: offsetX, y: offsetY))
+-                
+-                // 2. Terapkan Transform dari Slider User
+-                if let clip = activeClip {
+-                    let scale = CGFloat(clip.transform.scale)
+-                    let rotation = CGFloat(clip.transform.rotation) * .pi / 180.0
+-                    let tx = CGFloat(clip.transform.positionX)
+-                    let ty = CGFloat(clip.transform.positionY)
+-                    let opacity = CGFloat(clip.transform.opacity)
+-                    
+-                    let centerX = renderW / 2.0
+-                    let centerY = renderH / 2.0
+-                    
+-                    var userTransform = CGAffineTransform.identity
+-                    userTransform = userTransform.translatedBy(x: centerX, y: centerY)
+-                    userTransform = userTransform.scaledBy(x: scale, y: scale)
+-                    userTransform = userTransform.rotated(by: rotation)
+-                    userTransform = userTransform.translatedBy(x: -centerX, y: -centerY)
+-                    userTransform = userTransform.translatedBy(x: tx, y: ty)
+-                    
+-                    image = image.transformed(by: userTransform)
+-                    
+-                    if opacity < 1.0 {
+-                        if let filter = CIFilter(name: "CIColorMatrix") {
+-                            filter.setValue(image, forKey: "inputImage")
+-                            let alphaVector = CIVector(x: 0, y: 0, z: 0, w: opacity)
+-                            filter.setValue(alphaVector, forKey: "inputAVector")
+-                            if let output = filter.outputImage {
+-                                image = output
+-                            }
+-                        }
+-                    }
+-                }
+-            }
+-            
+-            // DIAGNOSTIK: Gabungkan dengan background BIRU
+-            // Jika video muncul, ia akan berada di atas layar biru.
+-            // Jika layar HANYA BIRU, berarti image = KOSONG (0x0).
+-            let blueBg = CIImage(color: .blue).cropped(to: CGRect(x: 0, y: 0, width: 1920, height: 1080))
+-            let finalImage = image.composited(over: blueBg)
+-            
+-            request.finish(with: finalImage, context: nil)
+-        }
+-        
+-        videoComp.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2 as String
+-        videoComp.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2 as String
+-        videoComp.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2 as String
+-        videoComp.renderSize = renderSize
+-        // Preview path intentionally stays on plain AVPlayerItem playback.
+-        // Keep the experimental video composition code above for export/rendering follow-up,
+-        // but do not attach it to the preview item in Phase 1.
+-        playerItem.videoComposition = nil
++        if !allLayerInstructions.isEmpty {
++            videoComposition.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2 as String
++            videoComposition.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2 as String
++            videoComposition.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2 as String
++            playerItem.videoComposition = videoComposition
++        }
+         
+         // Pasang Audio Mix

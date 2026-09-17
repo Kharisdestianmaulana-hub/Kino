@@ -1,0 +1,35 @@
+--- Kino/Core/Services/PlaybackEngine.swift
++++ Kino/Core/Services/PlaybackEngine.swift
+@@ -120,7 +120,6 @@
+         let audioTracks = sequence.tracks.filter { $0.type == .audio }
+         for audioTrack in audioTracks {
+             if let compAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
+-                let audioParam = AVMutableAudioMixInputParameters(track: compAudioTrack)
+                 
+                 for clip in audioTrack.clips {
+                     guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }),
+@@ -139,14 +138,11 @@
+                             let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
+                             
+                             try compAudioTrack.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
+-                            audioParam.setVolume(clip.volume, at: targetTime)
+                         }
+                     } catch {
+                         print("Error inserting audio clip: \(error)")
+                     }
+                 }
+-                
+-                audioMixParams.append(audioParam)
+             }
+         }
+         
+@@ -159,10 +155,5 @@
+             playerItem.videoComposition = videoComposition
+         }
+         
+-        // Pasang Audio Mix
+-        let audioMix = AVMutableAudioMix()
+-        audioMix.inputParameters = audioMixParams
+-        playerItem.audioMix = audioMix
+-        
+         print("[PlaybackEngine] buildPlayerItem DONE: compTracks=\(composition.tracks.count), compDuration=\(composition.duration.seconds)s")

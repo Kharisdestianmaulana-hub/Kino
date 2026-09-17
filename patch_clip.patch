@@ -1,0 +1,30 @@
+--- Kino/Core/Domain/Clip.swift
++++ Kino/Core/Domain/Clip.swift
+@@ -27,15 +27,19 @@
+     
+     /// Properties for audio manipulation (1.0 = 100%, 0.0 = mute)
+     public var volume: Float
++    
++    /// ID of a linked clip (e.g. linked audio track)
++    public var linkedClipID: UUID?
+ 
+-    public init(id: UUID = UUID(), mediaAssetID: UUID, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), volume: Float = 1.0) {
++    public init(id: UUID = UUID(), mediaAssetID: UUID, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), volume: Float = 1.0, linkedClipID: UUID? = nil) {
+         self.id = id
+         self.mediaAssetID = mediaAssetID
+         self.timelineStart = timelineStart
+         self.sourceStart = sourceStart
+         self.duration = duration
+         self.transform = transform
+         self.volume = volume
++        self.linkedClipID = linkedClipID
+     }
+     
+     // Custom Decoder untuk Backward Compatibility (mencegah crash saat buka file save lama)
+@@ -49,5 +53,6 @@
+         
+         self.transform = try container.decodeIfPresent(ClipTransform.self, forKey: .transform) ?? ClipTransform()
+         self.volume = try container.decodeIfPresent(Float.self, forKey: .volume) ?? 1.0
++        self.linkedClipID = try container.decodeIfPresent(UUID.self, forKey: .linkedClipID)
+     }
+ }

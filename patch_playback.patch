@@ -1,0 +1,74 @@
+--- Kino/Core/Services/PlaybackEngine.swift
++++ Kino/Core/Services/PlaybackEngine.swift
+@@ -16,11 +16,8 @@
+         let composition = AVMutableComposition()
+         composition.naturalSize = CGSize(width: 1920, height: 1080)
+         
+-        let compAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+-        
+         var audioMixParams: [AVMutableAudioMixInputParameters] = []
+         
+-        let audioParam = AVMutableAudioMixInputParameters(track: compAudioTrack)
+         let renderSize = CGSize(width: 1920, height: 1080) // Default HD
+         
+         // --- PROSES VIDEO TRACK ---
+@@ -121,8 +118,10 @@
+         }
+         
+         // --- PROSES AUDIO TRACK ---
+-        if let audioTrack = sequence.tracks.first(where: { $0.type == .audio }) {
+-            for clip in audioTrack.clips {
++        let audioTracks = sequence.tracks.filter { $0.type == .audio }
++        for audioTrack in audioTracks {
++            if let compAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
++                let audioParam = AVMutableAudioMixInputParameters(track: compAudioTrack)
++                for clip in audioTrack.clips {
+-                guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }),
+-                      let bookmark = assetRef.bookmarkData else { continue }
+-                
+-                var isStale = false
+-                guard let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) else { continue }
+-                _ = url.startAccessingSecurityScopedResource()
+-                
+-                let avAsset = AVURLAsset(url: url)
+-                do {
+-                    if let sourceTrack = avAsset.tracks(withMediaType: .audio).first {
+-                        let sourceTime = CMTime(seconds: clip.sourceStart, preferredTimescale: 600)
+-                        let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
+-                        let timeRange = CMTimeRange(start: sourceTime, duration: duration)
+-                        let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
+-                        
+-                        try compAudioTrack?.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
+-                        audioParam.setVolume(clip.volume, at: targetTime)
+-                    }
+-                } catch {
+-                    print("Error inserting audio clip: \(error)")
+-                }
+-            }
++                    guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }),
++                          let bookmark = assetRef.bookmarkData else { continue }
++                    
++                    var isStale = false
++                    guard let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) else { continue }
++                    _ = url.startAccessingSecurityScopedResource()
++                    
++                    let avAsset = AVURLAsset(url: url)
++                    do {
++                        if let sourceTrack = avAsset.tracks(withMediaType: .audio).first {
++                            let sourceTime = CMTime(seconds: clip.sourceStart, preferredTimescale: 600)
++                            let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
++                            let timeRange = CMTimeRange(start: sourceTime, duration: duration)
++                            let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
++                            
++                            try compAudioTrack.insertTimeRange(timeRange, of: sourceTrack, at: targetTime)
++                            audioParam.setVolume(clip.volume, at: targetTime)
++                        }
++                    } catch {
++                        print("Error inserting audio clip: \(error)")
++                    }
++                }
++                audioMixParams.append(audioParam)
++            }
+         }
+         
+         let playerItem = AVPlayerItem(asset: composition)

@@ -1,0 +1,69 @@
+--- Kino/Core/Commands/TimelineCommands.swift
++++ Kino/Core/Commands/TimelineCommands.swift
+@@ -33,26 +33,63 @@
+     
+     private let service: TimelineService
+     private let sequenceID: UUID
+-    private let trackID: UUID
+     private let clipID: UUID
+     private let oldStartTime: Double
+     private let newStartTime: Double
+     
++    private let oldTrackID: UUID
++    private var newTrackID: UUID?
++    
+     public init(service: TimelineService, sequenceID: UUID, trackID: UUID, clipID: UUID, oldStartTime: Double, newStartTime: Double) {
+         self.service = service
+         self.sequenceID = sequenceID
+-        self.trackID = trackID
++        self.oldTrackID = trackID
+         self.clipID = clipID
+         self.oldStartTime = oldStartTime
+         self.newStartTime = newStartTime
+     }
+     
+     public func execute() throws {
+-        try service.moveClip(id: clipID, toTime: newStartTime, inTrack: trackID, inSequence: sequenceID)
++        guard let sequence = service.getSequence(id: sequenceID) else { return }
++        guard let clip = service.getClip(id: clipID, inTrack: oldTrackID, inSequence: sequenceID) else { return }
++        
++        let epsilon = 0.001
++        let duration = clip.duration
++        
++        // Find a suitable track (Auto-Overlay)
++        var targetTrackID = oldTrackID
++        
++        let videoTracks = sequence.tracks.filter { $0.type == .video }
++        var foundTrack = false
++        
++        for track in videoTracks {
++            let overlaps = track.clips.contains { other in
++                other.id != clipID &&
++                !(newStartTime + duration <= other.timelineStart + epsilon || newStartTime >= other.timelineStart + other.duration - epsilon)
++            }
++            if !overlaps {
++                targetTrackID = track.id
++                foundTrack = true
++                break
++            }
++        }
++        
++        if !foundTrack {
++            let newTrack = Track(type: .video, name: "Video \(videoTracks.count + 1)")
++            service.addTrack(newTrack, toSequence: sequenceID)
++            targetTrackID = newTrack.id
++        }
++        
++        self.newTrackID = targetTrackID
++        
++        try service.moveClip(id: clipID, toTime: newStartTime, fromTrack: oldTrackID, toTrack: targetTrackID, inSequence: sequenceID)
+     }
+     
+     public func undo() {
+-        try? service.moveClip(id: clipID, toTime: oldStartTime, inTrack: trackID, inSequence: sequenceID)
++        guard let newTrackID = newTrackID else { return }
++        try? service.moveClip(id: clipID, toTime: oldStartTime, fromTrack: newTrackID, toTrack: oldTrackID, inSequence: sequenceID)
++        // Note: We don't remove empty tracks on undo for simplicity, though we could.
+     }
+     
+     public func redo() throws {
