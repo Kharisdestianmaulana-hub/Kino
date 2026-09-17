@@ -137,13 +137,33 @@ public struct TimelineView: View {
                            let track = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == id }) }),
                            let clip = track.clips.first(where: { $0.id == id }) {
                             
-                            let command = RemoveClipCommand(
+                            var commands: [Command] = []
+                            
+                            commands.append(RemoveClipCommand(
                                 service: workspace.timelineService,
                                 sequenceID: seqID,
                                 trackID: track.id,
                                 clipID: clip.id
-                            )
-                            workspace.execute(command)
+                            ))
+                            
+                            // Hapus klip tertaut (misal: audio pasangannya) jika ada
+                            if let linkedID = clip.linkedClipID,
+                               let linkedTrack = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == linkedID }) }) {
+                                commands.append(RemoveClipCommand(
+                                    service: workspace.timelineService,
+                                    sequenceID: seqID,
+                                    trackID: linkedTrack.id,
+                                    clipID: linkedID
+                                ))
+                            }
+                            
+                            if commands.count > 1 {
+                                let composite = CompositeCommand(name: "Delete Linked Clips", commands: commands)
+                                workspace.execute(composite)
+                            } else {
+                                workspace.execute(commands[0])
+                            }
+                            
                             workspace.clearSelection()
                         }
                     }

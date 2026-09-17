@@ -8,7 +8,15 @@ public struct ClipView: View {
     @EnvironmentObject var workspace: WorkspaceState
     
     // State sementara untuk visualisasi saat di-drag
+    enum DragMode {
+        case move
+        case trimLeft
+        case trimRight
+        case none
+    }
+    @State private var dragMode: DragMode = .none
     @State private var dragOffset: CGFloat = 0
+    @State private var trimOffset: CGFloat = 0
     @State private var thumbnail: NSImage? = nil
     
     private var asset: MediaAsset? {
@@ -83,7 +91,23 @@ public struct ClipView: View {
     }
     
     public var body: some View {
-        ZStack(alignment: .leading) {
+        var currentDuration: Double {
+            if dragMode == .trimLeft {
+                return max(0.1, clip.duration - Double(trimOffset / timeScale))
+            } else if dragMode == .trimRight {
+                return max(0.1, clip.duration + Double(trimOffset / timeScale))
+            }
+            return clip.duration
+        }
+        
+        var currentTimelineStart: Double {
+            if dragMode == .trimLeft {
+                return min(clip.timelineStart + clip.duration - 0.1, clip.timelineStart + Double(trimOffset / timeScale))
+            }
+            return clip.timelineStart
+        }
+        
+        return ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 4)
                 .fill(isSelected ? Color.accentColor : Color.gray.opacity(0.3))
             
@@ -106,7 +130,6 @@ public struct ClipView: View {
                             .clipped()
                             .opacity(isSelected ? 0.9 : 0.7)
                     } else {
-                        // Placeholder loading
                         Path { path in
                             let w = geo.size.width
                             let h = geo.size.height
@@ -137,39 +160,88 @@ public struct ClipView: View {
             }
             .padding(4)
         }
-        .frame(width: max(CGFloat(clip.duration) * timeScale, 5))
-        .offset(x: (CGFloat(clip.timelineStart) * timeScale) + dragOffset)
-        .onHover { isHovering in
-            if isHovering { 
-                if workspace.activeTool == .blade {
-                    NSCursor.crosshair.push() 
-                } else {
-                    NSCursor.pointingHand.push()
-                }
-            } else { 
-                NSCursor.pop() 
+        .frame(width: max(CGFloat(currentDuration) * timeScale, 5))
+        .offset(x: (CGFloat(currentTimelineStart) * timeScale) + dragOffset)
+        .overlay(
+            HStack(spacing: 0) {
+                // Left edge hover detection
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(width: 10)
+                    .onHover { isHovering in
+                        if isHovering && workspace.activeTool != .blade {
+                            NSCursor.resizeLeftRight.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
+                
+                // Center hover detection
+                Rectangle()
+                    .fill(Color.clear)
+                    .onHover { isHovering in
+                        if isHovering {
+                            if workspace.activeTool == .blade {
+                                NSCursor.crosshair.push()
+                            } else {
+                                NSCursor.pointingHand.push()
+                            }
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
+                
+                // Right edge hover detection
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(width: 10)
+                    .onHover { isHovering in
+                        if isHovering && workspace.activeTool != .blade {
+                            NSCursor.resizeLeftRight.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
             }
-        }
+        )
         .task {
             await loadThumbnail()
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .named("TrackSpace"))
                 .onChanged { value in
-                    // Jika tool Blade, abaikan drag visual
                     if workspace.activeTool == .blade { return }
                     
                     if !isSelected {
                         workspace.selectClip(id: clip.id)
                     }
-                    dragOffset = value.translation.width
+                    
+                    if dragMode == .none {
+                        let clipLeftEdge = CGFloat(clip.timelineStart) * timeScale
+                        let clipRightEdge = clipLeftEdge + CGFloat(clip.duration) * timeScale
+                        
+                        if abs(value.startLocation.x - clipLeftEdge) <= 10 {
+                            dragMode = .trimLeft
+                        } else if abs(value.startLocation.x - clipRightEdge) <= 10 {
+                            dragMode = .trimRight
+                        } else {
+                            dragMode = .move
+                        }
+                    }
+                    
+                    if dragMode == .move {
+                        dragOffset = value.translation.width
+                    } else {
+                        trimOffset = value.translation.width
+                    }
                 }
                 .onEnded { value in
-                    // Jika pergerakan sangat kecil (sekadar klik)
                     if abs(value.translation.width) < 2 && abs(value.translation.height) < 2 {
                         dragOffset = 0
+                        trimOffset = 0
+                        dragMode = .none
+                        
                         if workspace.activeTool == .blade {
-                            // value.startLocation.x sekarang 100% relatif terhadap titik nol Track (bukan Clip!)
                             let splitTimelineTime = Double(value.startLocation.x / timeScale)
                             
                             if splitTimelineTime > clip.timelineStart + 0.1 && splitTimelineTime < clip.timelineStart + clip.duration - 0.1 {
@@ -192,49 +264,116 @@ public struct ClipView: View {
                             workspace.selectClip(id: clip.id)
                         }
                     } else if workspace.activeTool == .selection {
-                        // Logika Move Clip
-                        let additionalTime = Double(value.translation.width / timeScale)
-                        let newStartTime = max(0, clip.timelineStart + additionalTime)
-                        dragOffset = 0
-                        
                         if let seqID = workspace.selectedSequenceID,
                            let seq = workspace.project?.sequences.first(where: { $0.id == seqID }),
                            let track = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == clip.id }) }) {
                             
                             var commands: [Command] = []
                             
-                            commands.append(MoveClipCommand(
-                                service: workspace.timelineService,
-                                sequenceID: seqID,
-                                trackID: track.id,
-                                clipID: clip.id,
-                                oldStartTime: clip.timelineStart,
-                                newStartTime: newStartTime
-                            ))
-                            
-                            // Cek Linked Clip
-                            if let linkedID = clip.linkedClipID,
-                               let linkedTrack = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == linkedID }) }),
-                               let linkedClip = linkedTrack.clips.first(where: { $0.id == linkedID }) {
+                            if dragMode == .move {
+                                let additionalTime = Double(value.translation.width / timeScale)
+                                let newStartTime = max(0, clip.timelineStart + additionalTime)
                                 
-                                let linkedNewStartTime = max(0, linkedClip.timelineStart + additionalTime)
                                 commands.append(MoveClipCommand(
                                     service: workspace.timelineService,
                                     sequenceID: seqID,
-                                    trackID: linkedTrack.id,
-                                    clipID: linkedID,
-                                    oldStartTime: linkedClip.timelineStart,
-                                    newStartTime: linkedNewStartTime
+                                    trackID: track.id,
+                                    clipID: clip.id,
+                                    oldStartTime: clip.timelineStart,
+                                    newStartTime: newStartTime
                                 ))
+                                
+                                if let linkedID = clip.linkedClipID,
+                                   let linkedTrack = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == linkedID }) }),
+                                   let linkedClip = linkedTrack.clips.first(where: { $0.id == linkedID }) {
+                                    
+                                    let linkedNewStartTime = max(0, linkedClip.timelineStart + additionalTime)
+                                    commands.append(MoveClipCommand(
+                                        service: workspace.timelineService,
+                                        sequenceID: seqID,
+                                        trackID: linkedTrack.id,
+                                        clipID: linkedID,
+                                        oldStartTime: linkedClip.timelineStart,
+                                        newStartTime: linkedNewStartTime
+                                    ))
+                                }
+                                
+                            } else if dragMode == .trimLeft || dragMode == .trimRight {
+                                let diffTime = Double(value.translation.width / timeScale)
+                                
+                                var newDuration = clip.duration
+                                var newTimelineStart = clip.timelineStart
+                                var newSourceStart = clip.sourceStart
+                                
+                                if dragMode == .trimLeft {
+                                    let maxTrim = clip.duration - 0.1
+                                    let actualTrim = min(maxTrim, diffTime)
+                                    
+                                    newTimelineStart += actualTrim
+                                    newSourceStart += actualTrim
+                                    newDuration -= actualTrim
+                                } else {
+                                    let actualTrim = max(-clip.duration + 0.1, diffTime)
+                                    newDuration += actualTrim
+                                }
+                                
+                                commands.append(TrimClipCommand(
+                                    service: workspace.timelineService,
+                                    sequenceID: seqID,
+                                    trackID: track.id,
+                                    clipID: clip.id,
+                                    oldTimelineStart: clip.timelineStart,
+                                    newTimelineStart: newTimelineStart,
+                                    oldSourceStart: clip.sourceStart,
+                                    newSourceStart: newSourceStart,
+                                    oldDuration: clip.duration,
+                                    newDuration: newDuration
+                                ))
+                                
+                                if let linkedID = clip.linkedClipID,
+                                   let linkedTrack = seq.tracks.first(where: { $0.clips.contains(where: { $0.id == linkedID }) }),
+                                   let linkedClip = linkedTrack.clips.first(where: { $0.id == linkedID }) {
+                                    
+                                    var linkedNewDuration = linkedClip.duration
+                                    var linkedNewTimelineStart = linkedClip.timelineStart
+                                    var linkedNewSourceStart = linkedClip.sourceStart
+                                    
+                                    if dragMode == .trimLeft {
+                                        let actualTrim = newTimelineStart - clip.timelineStart
+                                        linkedNewTimelineStart += actualTrim
+                                        linkedNewSourceStart += actualTrim
+                                        linkedNewDuration -= actualTrim
+                                    } else {
+                                        let actualTrim = newDuration - clip.duration
+                                        linkedNewDuration += actualTrim
+                                    }
+                                    
+                                    commands.append(TrimClipCommand(
+                                        service: workspace.timelineService,
+                                        sequenceID: seqID,
+                                        trackID: linkedTrack.id,
+                                        clipID: linkedID,
+                                        oldTimelineStart: linkedClip.timelineStart,
+                                        newTimelineStart: linkedNewTimelineStart,
+                                        oldSourceStart: linkedClip.sourceStart,
+                                        newSourceStart: linkedNewSourceStart,
+                                        oldDuration: linkedClip.duration,
+                                        newDuration: linkedNewDuration
+                                    ))
+                                }
                             }
                             
                             if commands.count > 1 {
-                                let composite = CompositeCommand(name: "Move Linked Clips", commands: commands)
+                                let composite = CompositeCommand(name: dragMode == .move ? "Move Linked Clips" : "Trim Linked Clips", commands: commands)
                                 workspace.execute(composite)
-                            } else {
+                            } else if commands.count == 1 {
                                 workspace.execute(commands[0])
                             }
                         }
+                        
+                        dragOffset = 0
+                        trimOffset = 0
+                        dragMode = .none
                     }
                 }
         )

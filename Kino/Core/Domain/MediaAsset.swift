@@ -18,10 +18,21 @@ public struct MediaMetadata: Codable {
     public var duration: Double
     public var hasVideo: Bool
     public var hasAudio: Bool
+    public var isImage: Bool // Tambahan baru
     
-    public init(duration: Double, hasVideo: Bool, hasAudio: Bool) {
+    public init(duration: Double, hasVideo: Bool, hasAudio: Bool, isImage: Bool = false) {
         self.duration = duration
         self.hasVideo = hasVideo
         self.hasAudio = hasAudio
+        self.isImage = isImage
+    }
+    
+    // Custom Decoder untuk backward compatibility
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.duration = try container.decode(Double.self, forKey: .duration)
+        self.hasVideo = try container.decode(Double.self, forKey: .hasVideo)
+        self.hasAudio = try container.decode(Double.self, forKey: .hasAudio)
+        self.isImage = try container.decodeIfPresent(Bool.self, forKey: .isImage) ?? false
     }
 }

@@ -1,6 +1,7 @@
 import Foundation
 import AppKit
 import AVFoundation
+import UniformTypeIdentifiers
 
 public class MediaService {
     public init() {}
@@ -19,6 +20,9 @@ public class MediaService {
             print("Failed to create bookmark: \(error)")
         }
         
+        let type = try? originalURL.resourceValues(forKeys: [.contentTypeKey]).contentType
+        let isImage = type?.conforms(to: .image) ?? false
+        
         // Read metadata using AVFoundation
         let asset = AVURLAsset(url: originalURL)
         let duration = asset.duration.seconds.isNaN ? 0 : asset.duration.seconds
@@ -27,7 +31,7 @@ public class MediaService {
         let hasVideo = !asset.tracks(withMediaType: .video).isEmpty
         let hasAudio = !asset.tracks(withMediaType: .audio).isEmpty
         
-        let metadata = MediaMetadata(duration: duration, hasVideo: hasVideo, hasAudio: hasAudio)
+        let metadata = MediaMetadata(duration: isImage ? 5.0 : duration, hasVideo: hasVideo, hasAudio: hasAudio, isImage: isImage)
         
         return MediaAsset(originalURL: originalURL, bookmarkData: bookmarkData, metadata: metadata)
     }

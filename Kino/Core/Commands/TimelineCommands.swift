@@ -129,3 +129,52 @@ public class RemoveClipCommand: Command {
         try execute()
     }
 }
+
+public class TrimClipCommand: Command {
+    public let name = "Trim Clip"
+    
+    private let service: TimelineService
+    private let sequenceID: UUID
+    private let trackID: UUID
+    private let clipID: UUID
+    
+    private let oldTimelineStart: Double
+    private let newTimelineStart: Double
+    private let oldSourceStart: Double
+    private let newSourceStart: Double
+    private let oldDuration: Double
+    private let newDuration: Double
+    
+    public init(service: TimelineService, sequenceID: UUID, trackID: UUID, clipID: UUID, oldTimelineStart: Double, newTimelineStart: Double, oldSourceStart: Double, newSourceStart: Double, oldDuration: Double, newDuration: Double) {
+        self.service = service
+        self.sequenceID = sequenceID
+        self.trackID = trackID
+        self.clipID = clipID
+        self.oldTimelineStart = oldTimelineStart
+        self.newTimelineStart = newTimelineStart
+        self.oldSourceStart = oldSourceStart
+        self.newSourceStart = newSourceStart
+        self.oldDuration = oldDuration
+        self.newDuration = newDuration
+    }
+    
+    public func execute() throws {
+        guard var clip = service.getClip(id: clipID, inTrack: trackID, inSequence: sequenceID) else { return }
+        clip.timelineStart = newTimelineStart
+        clip.sourceStart = newSourceStart
+        clip.duration = newDuration
+        service.updateClip(clip, inTrack: trackID, inSequence: sequenceID)
+    }
+    
+    public func undo() {
+        guard var clip = service.getClip(id: clipID, inTrack: trackID, inSequence: sequenceID) else { return }
+        clip.timelineStart = oldTimelineStart
+        clip.sourceStart = oldSourceStart
+        clip.duration = oldDuration
+        service.updateClip(clip, inTrack: trackID, inSequence: sequenceID)
+    }
+    
+    public func redo() throws {
+        try execute()
+    }
+}
