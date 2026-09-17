@@ -94,6 +94,7 @@ public struct ViewerView: View {
                         ViewerTransformOverlay(localDragTransform: $localDragTransform)
                     }
                 }
+                .clipped() // Potong konten yang meluap agar tidak menutupi panel UI lain
             }
             
             HStack(spacing: 24) {
