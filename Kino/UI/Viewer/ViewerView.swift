@@ -43,6 +43,8 @@ public struct ViewerView: View {
     @State private var player = AVPlayer()
     @State private var previewImage: NSImage? = nil
     @State private var localDragTransform: ClipTransform? = nil
+    @State private var lagMaskingTransform: ClipTransform? = nil
+    @State private var lagMaskingStartTransform: ClipTransform? = nil
     
     public var body: some View {
         VStack(spacing: 0) {
@@ -196,26 +198,45 @@ public struct ViewerView: View {
     // Saat tidak drag: target == rendered → rasio 1.0, offset 0
     
     private var relativeScale: CGFloat {
-        guard localDragTransform != nil else { return 1.0 }
-        let target = activePresentationState.transform.scale
-        let rendered = workspace.previewPresentationState.transform.scale
-        guard rendered > 0.001 else { return CGFloat(target) }
-        return CGFloat(target / rendered)
+        if localDragTransform != nil {
+            let target = activePresentationState.transform.scale
+            let rendered = workspace.previewPresentationState.transform.scale
+            guard rendered > 0.001 else { return CGFloat(target) }
+            return CGFloat(target / rendered)
+        } else if let lagEnd = lagMaskingTransform, let lagStart = lagMaskingStartTransform {
+            let target = lagEnd.scale
+            let rendered = lagStart.scale
+            guard rendered > 0.001 else { return CGFloat(target) }
+            return CGFloat(target / rendered)
+        }
+        return 1.0
     }
     
     private var relativeRotation: Double {
-        guard localDragTransform != nil else { return 0 }
-        return activePresentationState.transform.rotation - workspace.previewPresentationState.transform.rotation
+        if localDragTransform != nil {
+            return activePresentationState.transform.rotation - workspace.previewPresentationState.transform.rotation
+        } else if let lagEnd = lagMaskingTransform, let lagStart = lagMaskingStartTransform {
+            return lagEnd.rotation - lagStart.rotation
+        }
+        return 0
     }
     
     private var relativeOffsetX: CGFloat {
-        guard localDragTransform != nil else { return 0 }
-        return CGFloat(activePresentationState.transform.positionX - workspace.previewPresentationState.transform.positionX)
+        if localDragTransform != nil {
+            return CGFloat(activePresentationState.transform.positionX - workspace.previewPresentationState.transform.positionX)
+        } else if let lagEnd = lagMaskingTransform, let lagStart = lagMaskingStartTransform {
+            return CGFloat(lagEnd.positionX - lagStart.positionX)
+        }
+        return 0
     }
     
     private var relativeOffsetY: CGFloat {
-        guard localDragTransform != nil else { return 0 }
-        return CGFloat(activePresentationState.transform.positionY - workspace.previewPresentationState.transform.positionY)
+        if localDragTransform != nil {
+            return CGFloat(activePresentationState.transform.positionY - workspace.previewPresentationState.transform.positionY)
+        } else if let lagEnd = lagMaskingTransform, let lagStart = lagMaskingStartTransform {
+            return CGFloat(lagEnd.positionY - lagStart.positionY)
+        }
+        return 0
     }
     
     
@@ -456,11 +477,28 @@ private struct ViewerTransformOverlay: View {
             newClip: newClip
         )
         workspace.executeClipPropertiesCommand(command)
+        
+        let startT = interaction.startTransform
+        let endT = finalTransform
+        
+        lagMaskingStartTransform = startT
+        lagMaskingTransform = endT
+        
         currentDragTransform = nil
         lastPreviewTransform = nil
         lastPreviewTimestamp = 0
         localDragTransform = nil
         self.interaction = nil
+        
+        // Tahan transform kompensasi selama 150ms agar AVPlayer punya waktu 
+        // merender pixel baru sebelum SwiftUI melepas kompensasinya.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            // Hanya hapus jika tidak ada drag baru yang dimulai
+            if self.interaction == nil {
+                self.lagMaskingTransform = nil
+                self.lagMaskingStartTransform = nil
+            }
+        }
     }
     
     private func canvasRect(in size: CGSize) -> CGRect? {
