@@ -75,16 +75,6 @@ public struct ViewerView: View {
                             }
                         }
                         .frame(width: canvasRect.width, height: canvasRect.height)
-                        .scaleEffect(activePresentationState.transform.scale)
-                        // Rotasi dari Inspector tetap dilayani oleh SwiftUI
-                        .rotationEffect(.degrees(activePresentationState.transform.rotation))
-                        .position(
-                            x: canvasRect.midX + CGFloat(activePresentationState.transform.positionX),
-                            y: canvasRect.midY + CGFloat(activePresentationState.transform.positionY)
-                        )
-                        .transaction { transaction in
-                            transaction.animation = nil
-                        }
                         .allowsHitTesting(false)
                     
                     if let img = previewImage {
@@ -279,6 +269,23 @@ private struct ViewerTransformOverlay: View {
         }
     }
     
+        private func getMediaSize(for context: ActiveVideoClipContext, inside rect: CGRect) -> CGSize {
+        // Use the project render size (same as KinoVideoCompositor) to match the actual rendered frame
+        guard let settings = workspace.project?.settings,
+              settings.resolutionWidth > 0,
+              settings.resolutionHeight > 0 else {
+            return rect.size
+        }
+        
+        let resW = CGFloat(settings.resolutionWidth)
+        let resH = CGFloat(settings.resolutionHeight)
+        let scaleX = rect.width / resW
+        let scaleY = rect.height / resH
+        let baseScale = min(scaleX, scaleY)
+        
+        return CGSize(width: resW * baseScale, height: resH * baseScale)
+    }
+    
     @ViewBuilder
     private func selectionSurface(
         context: ActiveVideoClipContext,
@@ -286,8 +293,9 @@ private struct ViewerTransformOverlay: View {
         rect: CGRect,
         isSelected: Bool
     ) -> some View {
-        let scaledWidth = rect.width * CGFloat(transform.scale)
-        let scaledHeight = rect.height * CGFloat(transform.scale)
+        let mediaSize = getMediaSize(for: context, inside: rect)
+        let scaledWidth = mediaSize.width * CGFloat(transform.scale)
+        let scaledHeight = mediaSize.height * CGFloat(transform.scale)
         
         ZStack {
             // Hitbox area untuk frame video yang mengikuti skala
@@ -323,10 +331,11 @@ private struct ViewerTransformOverlay: View {
         }
     }
     
-    private func scaleHandleOffset(for corner: ViewerTransformCorner, rect: CGRect, scale: Double) -> CGSize {
-        CGSize(
-            width: (rect.width / 2 * CGFloat(scale)) * corner.xSign,
-            height: (rect.height / 2 * CGFloat(scale)) * corner.ySign
+    private func scaleHandleOffset(for corner: ViewerTransformCorner, context: ActiveVideoClipContext, rect: CGRect, scale: Double) -> CGSize {
+        let mediaSize = getMediaSize(for: context, inside: rect)
+        return CGSize(
+            width: (mediaSize.width / 2 * CGFloat(scale)) * corner.xSign,
+            height: (mediaSize.height / 2 * CGFloat(scale)) * corner.ySign
         )
     }
 
@@ -335,7 +344,7 @@ private struct ViewerTransformOverlay: View {
             .fill(Color.white)
             .frame(width: handleSize, height: handleSize)
             .overlay(Circle().stroke(Color.black.opacity(0.55), lineWidth: 0.5))
-            .offset(scaleHandleOffset(for: corner, rect: rect, scale: scale))
+            .offset(scaleHandleOffset(for: corner, context: context, rect: rect, scale: scale))
             .gesture(
                 DragGesture(minimumDistance: 0, coordinateSpace: .global)
                     .onChanged { value in
@@ -379,7 +388,8 @@ private struct ViewerTransformOverlay: View {
         
         let vector = transformedUnitVector(for: corner, rotation: interaction.startTransform.rotation)
         let projectedDistance = translation.width * vector.dx + translation.height * vector.dy
-        let halfDiagonal = max(1, hypot(rect.width, rect.height) / 2)
+                let mediaSize = getMediaSize(for: context, inside: rect)
+        let halfDiagonal = max(1, hypot(mediaSize.width, mediaSize.height) / 2)
         let nextScale = max(0.05, interaction.startTransform.scale + Double(projectedDistance / halfDiagonal))
         
         var nextTransform = interaction.startTransform
@@ -400,7 +410,11 @@ private struct ViewerTransformOverlay: View {
         
         lastPreviewTimestamp = now
         lastPreviewTransform = transform
-        localDragTransform = transform
+                localDragTransform = transform
+        
+        var newClip = context.clip
+        newClip.transform = transform
+        workspace.previewUpdateClipProperties(newClip, inTrack: context.trackID, inSequence: context.sequenceID)
     }
     
     private func commitInteraction(context: ActiveVideoClipContext) {
