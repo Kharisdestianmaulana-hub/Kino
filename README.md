@@ -1,132 +1,193 @@
 <div align="center">
-  <img src="Logo.png" alt="Kino Logo" width="200" height="200"/>
-  <h1>Kino Video Editor</h1>
-  <p><em>A lightning-fast, native macOS Non-Linear Editor (NLE) built for the Apple Silicon era.</em></p>
+  <img src="Logo.png" alt="Kino Logo" width="180" height="180"/>
+  <h1>Kino</h1>
+  <strong>A native macOS video editor. Zero compromises.</strong>
+  <br/><br/>
+
+  ![Swift](https://img.shields.io/badge/Swift-6.0-F05138?style=flat&logo=swift&logoColor=white)
+  ![Platform](https://img.shields.io/badge/Platform-macOS-000000?style=flat&logo=apple&logoColor=white)
+  ![License](https://img.shields.io/badge/License-PolyForm%20Shield-blue?style=flat)
+  ![Architecture](https://img.shields.io/badge/Architecture-SwiftUI%20%2B%20AVFoundation-purple?style=flat)
+
+  <br/>
+  <sub>Built from the ground up for Apple Silicon. No Electron. No compromises.</sub>
 </div>
 
----
-
-### Screenshots
+<br/>
 
 <div align="center">
-  <img src="Screenshots/Screenshot1.png" alt="Kino Editor - Main Workspace" width="800"/>
+  <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
   <br/><br/>
-  <img src="Screenshots/Screenshot2.png" alt="Kino Editor - Timeline & Playback" width="800"/>
+  <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
 </div>
 
 ---
 
-## 🇬🇧 English Version
+<details>
+<summary><strong>Table of Contents</strong></summary>
 
-Kino is a powerful, highly optimized native macOS non-linear video editing application. It was built completely from the ground up using modern Apple frameworks such as **SwiftUI**, **AVFoundation**, and **CoreImage**. 
+- [English](#english)
+  - [What is Kino](#what-is-kino)
+  - [Features](#features)
+  - [Architecture](#architecture)
+  - [Getting Started](#getting-started)
+  - [License](#license)
+- [Bahasa Indonesia](#bahasa-indonesia)
+  - [Apa itu Kino](#apa-itu-kino)
+  - [Fitur](#fitur)
+  - [Arsitektur](#arsitektur)
+  - [Cara Memulai](#cara-memulai)
+  - [Lisensi](#lisensi)
 
-Unlike web-based editors or Electron wrappers, Kino is designed to squeeze every ounce of performance out of macOS and Apple Silicon. With a clean, professional, dark-themed interface inspired by industry standards like Final Cut Pro and Adobe Premiere Pro, Kino offers a robust timeline, infinite tracks, and hardware-accelerated rendering.
-
-### 🌟 Key Features & Workflows
-
-#### 1. Infinite Multi-Track Timeline
-Kino moves away from rigid single-track constraints. You can add, stack, and organize unlimited video and audio tracks. The rendering engine natively respects the Z-index stacking order: clips on higher tracks (e.g., Video 3) will visually occlude clips on lower tracks (e.g., Video 1).
-
-#### 2. Intelligent Auto-Overlay System
-Say goodbye to destructive editing. When you drag a new video clip onto the timeline and drop it over an existing clip, Kino will intelligently calculate the space and automatically push the new clip to an unoccupied, higher track (overlay) instead of deleting or overwriting the clip underneath it.
-
-#### 3. Smart Audio/Video Linking
-Media assets are rarely silent. When you drop a video file onto the timeline, Kino's `MediaService` automatically extracts the embedded audio track. It then creates two separate clips (one video, one audio) and links them together via a `linkedClipID`. 
-- **Move Together:** Dragging the video automatically drags the audio with it.
-- **Unlink for J/L Cuts:** You can easily right-click and select "Unlink" to freely manipulate the audio and video independently.
-
-#### 4. Hardware-Accelerated Playback Engine
-At the heart of Kino lies the `PlaybackEngine`, a complex wrapper around `AVMutableComposition` and `AVPlayerItem`.
-- It processes opacity blending, dynamic scaling, and transformations in real-time.
-- It automatically handles silent tracks and dynamically protects against out-of-bounds `CMTimeRange` errors that crash standard AVFoundation setups.
-
-#### 5. True Audio Waveform Visualization
-Kino doesn't use fake, randomized waveform graphics. The `WaveformGenerator` uses `AVAssetReader` to delve deep into the raw media file, extracting 16-bit PCM audio samples. It then downsamples millions of data points efficiently using a stride algorithm to generate a 100% accurate, visually distinct green waveform for every audio clip on your timeline.
-
-#### 6. In-Memory Thumbnail Caching
-Scrolling through hundreds of 4K video assets can bring standard applications to their knees. Kino utilizes a custom, thread-safe `ThumbnailCache` coupled with Swift's asynchronous `Task` queues. Once a video thumbnail or waveform is generated, it is cached in memory, ensuring buttery-smooth 60fps scrolling across the entire app.
-
-#### 7. Inspector & Interactive Canvas
-Customize your media on the fly. You can alter the X/Y positioning, scale, and rotation of any video clip through traditional UI sliders in the Inspector panel, or you can simply click and drag the video directly within the Canvas window for visual precision.
-
-#### 8. Command Pattern Architecture (Undo/Redo Ready)
-Every single action inside the timeline (moving a clip, adding a track, splitting a media file) is strictly encapsulated within a Command Object (e.g., `MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`). This strict adherence to the Command Pattern ensures state safety and provides the exact foundation needed for an infinite Undo/Redo history stack.
+</details>
 
 ---
 
-### 🏗 Architecture & Tech Stack
-Kino is a testament to what is possible with modern Swift 6.
-- **State Management:** Kino abandons messy callbacks and delegates in favor of SwiftUI's `@EnvironmentObject`. The `WorkspaceState` class acts as the single source of truth for the entire application.
-- **Domain Layer Isolation:** Core business logic is contained within pure Swift structs (`Clip`, `Track`, `Sequence`, `MediaAsset`). They are entirely decoupled from the UI.
-- **Service Layer:** Heavy I/O and multimedia tasks are separated into dedicated services like `TimelineService`, `MediaService`, and `PlaybackEngine`.
-- **Custom Coordinate Spaces:** Drag-and-drop mechanics in the timeline are calculated using customized SwiftUI `CoordinateSpace` geometries, allowing for pixel-perfect frame dropping and intersection detection.
+# English
+
+## What is Kino
+
+Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It uses SwiftUI for the interface, AVFoundation for media processing, and CoreImage for real-time compositing.
+
+Most "native" editors are actually cross-platform compromises wrapped in a macOS skin. Kino is different. Every line of code was written specifically for macOS and Apple Silicon, taking full advantage of hardware-accelerated decoding, Metal-backed rendering, and the tight integration that only a true native app can provide.
+
+The result is an editor that launches instantly, renders without stutter, and handles 4K footage the way macOS was designed to.
+
+## Features
+
+| Feature | Description |
+|---|---|
+| **Multi-Track Timeline** | Unlimited video and audio tracks with proper Z-index compositing. Higher tracks visually occlude lower ones, just like Premiere Pro and Final Cut. |
+| **Auto-Overlay** | Drop a clip on top of another and Kino automatically places it on a higher track instead of overwriting. No more accidental deletions. |
+| **Linked Audio/Video** | Importing a video automatically extracts and links its audio track. Move them together, or right-click to unlink for precise J/L cuts. |
+| **GPU Playback** | The playback engine wraps `AVMutableComposition` with custom `AVMutableVideoComposition` instructions for real-time opacity, scale, and transform blending. |
+| **Real Waveforms** | Audio waveforms are generated from actual 16-bit PCM sample data via `AVAssetReader`, not random squiggly lines. Silent tracks show as flat lines so you know immediately. |
+| **Thumbnail Cache** | A thread-safe in-memory cache ensures that scrolling through hundreds of media assets stays at 60fps. Thumbnails and waveforms are generated once, then served from memory. |
+| **Inspector Panel** | Adjust position, scale, and rotation through precise sliders, or drag directly on the canvas for visual editing. |
+| **Command Pattern** | Every timeline action is wrapped in a reversible command object (`MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`), providing the foundation for full undo/redo history. |
+
+## Architecture
+
+Kino follows a clean, layered architecture that separates concerns strictly:
+
+```
+Kino/
+  App/                  # Application entry point and lifecycle
+  Core/
+    Domain/             # Pure data models: Clip, Track, Sequence, MediaAsset
+    Services/           # Business logic: PlaybackEngine, MediaService, TimelineService
+    Commands/           # Command pattern: reversible actions for undo/redo
+  UI/
+    Timeline/           # Timeline rendering: ClipView, TrackView, TimelineRulerView
+    Viewer/             # Video canvas with interactive transform handles
+    Inspector/          # Property panel for clip manipulation
+    MediaBrowser/       # Asset library with drag-and-drop support
+    State/              # WorkspaceState - single source of truth
+    Workspace/          # Main layout and export modal
+```
+
+**Key design decisions:**
+
+- **Single Source of Truth.** `WorkspaceState` is an `@EnvironmentObject` that owns all project data. Every view reads from it; every mutation goes through it. No stale state, no sync bugs.
+- **Domain Isolation.** `Clip`, `Track`, `Sequence`, and `MediaAsset` are plain Swift structs with zero UI dependencies. They can be serialized, tested, and reasoned about independently.
+- **Service Layer.** `PlaybackEngine` handles all AVFoundation complexity. `MediaService` manages file access and bookmark resolution. `TimelineService` handles clip placement logic. Views never touch AVFoundation directly.
+- **Coordinate Precision.** Timeline drag-and-drop uses named SwiftUI `CoordinateSpace` instances for pixel-accurate hit testing across nested scroll views.
+
+## Getting Started
+
+**Requirements:**
+- macOS 14.0 Sonoma or later
+- Xcode 16.0 or later
+- Apple Silicon recommended (Intel supported)
+
+**Build and Run:**
+1. Clone this repository
+2. Open `Kino.xcodeproj` in Xcode
+3. Select the "Kino" scheme and "My Mac" as the destination
+4. Press `Cmd + R`
+
+No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
+
+## License
+
+This project is licensed under the **PolyForm Shield License 1.0.0**.
+
+You are free to read, study, and learn from this code. You may not use it to build a competing product or commercial service. See `LICENSE` for the full terms.
+
+Interested in contributing? Read `CONTRIBUTING.md` for guidelines on bug reports, feature requests, and pull requests.
 
 ---
-
-### ⚖️ License & Contributing
-This repository is licensed under the **PolyForm Shield License 1.0.0**. 
-
-**What does this mean?**
-You are highly encouraged to read, study, clone, and learn from this source code! It serves as an open textbook for building complex AVFoundation architectures in SwiftUI. 
-However, **you may not modify, distribute, or host this code to create a competing commercial product or service.** 
-
-Please refer to the `LICENSE` file for full legal terminology. If you are interested in fixing bugs or contributing to the non-commercial improvement of this project, please read `CONTRIBUTING.md`.
-
----
 ---
 
-## 🇮🇩 Versi Indonesia
+# Bahasa Indonesia
 
-Kino adalah aplikasi perangkat lunak penyunting video non-linear (NLE) yang sangat optimal dan dirancang khusus (native) untuk ekosistem macOS. Aplikasi ini dibangun dari nol menggunakan kerangka kerja (framework) modern Apple, yakni **SwiftUI**, **AVFoundation**, dan **CoreImage**.
+## Apa itu Kino
 
-Berbeda dengan editor video berbasis web atau aplikasi hasil bungkus (wrapper) Electron, Kino dirancang untuk memeras setiap tetes performa dari prosesor Apple Silicon dan macOS. Dengan antarmuka bertema gelap yang bersih dan profesional—terinspirasi dari standar industri seperti Final Cut Pro dan Adobe Premiere Pro—Kino menawarkan timeline yang tangguh, track tanpa batas, dan proses render yang diakselerasi oleh perangkat keras (GPU).
+Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya dalam bahasa Swift untuk macOS. Kino menggunakan SwiftUI untuk antarmuka, AVFoundation untuk pemrosesan media, dan CoreImage untuk komposisi visual secara real-time.
 
-### 🌟 Fitur Utama & Alur Kerja
+Kebanyakan editor yang mengklaim "native" sebenarnya adalah kompromi lintas platform yang dibungkus tampilan macOS. Kino berbeda. Setiap baris kodenya ditulis secara spesifik untuk macOS dan Apple Silicon, memanfaatkan sepenuhnya akselerasi perangkat keras untuk decoding, rendering berbasis Metal, dan integrasi mendalam yang hanya bisa dilakukan oleh aplikasi native sejati.
 
-#### 1. Timeline Multi-Track Tanpa Batas
-Kino membebaskan Anda dari batasan satu track konvensional. Anda dapat menambahkan, menumpuk, dan mengatur track video maupun audio dalam jumlah tak terbatas. Mesin render secara native menghormati urutan tumpukan (Z-index): klip di track yang lebih tinggi (misal: Video 3) akan secara visual menutupi klip di track bawahnya (misal: Video 1).
+Hasilnya adalah editor yang terbuka dalam sekejap, merender tanpa patah-patah, dan menangani rekaman 4K sesuai kemampuan asli macOS.
 
-#### 2. Sistem Auto-Overlay Cerdas
-Katakan selamat tinggal pada pengeditan destruktif. Ketika Anda menarik klip video baru ke timeline dan menjatuhkannya di atas klip yang sudah ada, Kino akan secara cerdas menghitung ruang kosong dan otomatis memindahkan klip baru tersebut ke track kosong di atasnya (overlay), alih-alih menghapus atau menimpa klip di bawahnya.
+## Fitur
 
-#### 3. Tautan Audio/Video Pintar (Smart Linking)
-File media jarang sekali tidak memiliki suara. Saat Anda menaruh file video ke timeline, `MediaService` Kino akan secara otomatis mengekstrak track audio yang tertanam di dalamnya. Sistem lalu membuat dua klip terpisah (satu video, satu audio) dan mengikat keduanya menggunakan `linkedClipID`.
-- **Bergerak Bersama:** Menggeser video akan otomatis membawa klip audionya.
-- **Pisahkan untuk Potongan J/L (J/L Cuts):** Anda dapat dengan mudah melakukan klik kanan dan memilih "Unlink" untuk memanipulasi klip audio dan video secara terpisah.
+| Fitur | Deskripsi |
+|---|---|
+| **Timeline Multi-Track** | Track video dan audio tanpa batas dengan komposisi Z-index yang benar. Track yang lebih tinggi menutupi track di bawahnya, persis seperti Premiere Pro dan Final Cut. |
+| **Auto-Overlay** | Jatuhkan klip di atas klip lain dan Kino otomatis menempatkannya di track yang lebih tinggi, bukan menimpa. Tidak ada lagi penghapusan yang tidak disengaja. |
+| **Tautan Audio/Video** | Mengimpor video otomatis mengekstrak dan menautkan track audionya. Gerakkan bersama-sama, atau klik kanan untuk memisahkan demi J/L cut yang presisi. |
+| **Pemutaran GPU** | Mesin pemutar membungkus `AVMutableComposition` dengan instruksi `AVMutableVideoComposition` kustom untuk pencampuran opasitas, skala, dan transformasi secara real-time. |
+| **Waveform Asli** | Gelombang suara dihasilkan dari data sampel PCM 16-bit asli melalui `AVAssetReader`, bukan garis acak. Track yang sunyi ditampilkan sebagai garis datar sehingga Anda langsung tahu. |
+| **Cache Thumbnail** | Cache di memori yang thread-safe memastikan scroll ratusan aset media tetap 60fps. Thumbnail dan waveform dibuat sekali, lalu disajikan dari memori. |
+| **Panel Inspector** | Sesuaikan posisi, skala, dan rotasi melalui slider yang presisi, atau geser langsung di kanvas untuk pengeditan visual. |
+| **Pola Command** | Setiap aksi di timeline dibungkus dalam objek perintah yang dapat dibalik (`MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`), menyediakan fondasi untuk riwayat undo/redo penuh. |
 
-#### 4. Mesin Pemutar Terakselerasi Perangkat Keras
-Jantung dari Kino adalah `PlaybackEngine`, sebuah sistem kompleks yang membungkus `AVMutableComposition` dan `AVPlayerItem`.
-- Sistem ini memproses pencampuran opasitas (transparansi), skala dinamis, dan transformasi secara seketika (real-time).
-- Sistem ini juga otomatis menangani track yang hening/bisu dan melindungi aplikasi dari error durasi (`CMTimeRange`) yang sering membuat aplikasi AVFoundation biasa mengalami *crash*.
+## Arsitektur
 
-#### 5. Visualisasi Waveform Audio Asli
-Kino tidak menggunakan grafik gelombang suara acak atau palsu. `WaveformGenerator` menggunakan `AVAssetReader` untuk menggali jauh ke dalam file media mentah, mengekstrak sampel audio PCM 16-bit. Sistem lalu menyusutkan jutaan titik data ini menggunakan algoritma lompatan (stride) yang efisien untuk menghasilkan gelombang hijau yang 100% akurat secara visual untuk setiap klip audio di timeline Anda.
+Kino mengikuti arsitektur berlapis yang bersih dengan pemisahan tanggung jawab secara ketat:
 
-#### 6. Sistem Cache Thumbnail di Memori
-Menggulir (scrolling) ratusan aset video 4K dapat membuat aplikasi standar menjadi sangat lambat. Kino mengatasi hal ini dengan menggunakan `ThumbnailCache` kustom yang digabungkan dengan antrean `Task` asynchronous milik Swift. Setelah thumbnail video atau waveform audio dibuat, hasilnya disimpan di memori, memastikan proses scroll 60fps yang sangat mulus di seluruh bagian aplikasi.
+```
+Kino/
+  App/                  # Titik masuk aplikasi dan siklus hidup
+  Core/
+    Domain/             # Model data murni: Clip, Track, Sequence, MediaAsset
+    Services/           # Logika bisnis: PlaybackEngine, MediaService, TimelineService
+    Commands/           # Pola command: aksi reversibel untuk undo/redo
+  UI/
+    Timeline/           # Render timeline: ClipView, TrackView, TimelineRulerView
+    Viewer/             # Kanvas video dengan handle transformasi interaktif
+    Inspector/          # Panel properti untuk manipulasi klip
+    MediaBrowser/       # Pustaka aset dengan dukungan drag-and-drop
+    State/              # WorkspaceState - sumber kebenaran tunggal
+    Workspace/          # Tata letak utama dan modal ekspor
+```
 
-#### 7. Inspector & Manipulasi Canvas Interaktif
-Sesuaikan media Anda secara langsung. Anda dapat mengubah posisi X/Y, ukuran (skala), dan rotasi klip video apa pun melalui panel kontrol Inspector standar, atau Anda bisa langsung mengklik dan menggeser video secara interaktif di dalam layar Canvas untuk presisi visual yang instan.
+**Keputusan desain utama:**
 
-#### 8. Arsitektur Pola Perintah (Siap untuk Undo/Redo)
-Setiap tindakan di dalam timeline (memindahkan klip, menambah track, memotong media) dibungkus secara ketat di dalam Objek Perintah (contohnya: `MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`). Kepatuhan ketat terhadap Pola Perintah (Command Pattern) ini memastikan keamanan data dan memberikan fondasi yang sangat kuat untuk mengimplementasikan riwayat Undo/Redo tanpa batas di masa mendatang.
+- **Sumber Kebenaran Tunggal.** `WorkspaceState` adalah `@EnvironmentObject` yang memiliki semua data proyek. Setiap view membaca darinya; setiap mutasi melewatinya. Tidak ada state basi, tidak ada bug sinkronisasi.
+- **Isolasi Domain.** `Clip`, `Track`, `Sequence`, dan `MediaAsset` adalah struct Swift murni tanpa ketergantungan UI. Mereka bisa diserialisasi, diuji, dan dipahami secara independen.
+- **Lapisan Servis.** `PlaybackEngine` menangani seluruh kompleksitas AVFoundation. `MediaService` mengelola akses file dan resolusi bookmark. `TimelineService` menangani logika penempatan klip. View tidak pernah menyentuh AVFoundation secara langsung.
+- **Presisi Koordinat.** Drag-and-drop di timeline menggunakan instance `CoordinateSpace` bernama dari SwiftUI untuk hit testing yang akurat hingga tingkat piksel di dalam nested scroll view.
 
----
+## Cara Memulai
 
-### 🏗 Arsitektur & Teknologi (Tech Stack)
-Kino adalah bukti nyata tentang apa yang bisa dicapai dengan bahasa Swift 6 modern.
-- **Manajemen State (Kondisi):** Kino meninggalkan penggunaan callback dan delegate yang berantakan, dan beralih menggunakan `@EnvironmentObject` dari SwiftUI. Kelas `WorkspaceState` bertindak sebagai sumber kebenaran tunggal (Single Source of Truth) untuk seluruh aplikasi.
-- **Isolasi Lapisan Domain:** Logika bisnis inti dibungkus dalam struct Swift murni (`Clip`, `Track`, `Sequence`, `MediaAsset`). Mereka sepenuhnya terpisah dari tampilan UI (antarmuka).
-- **Lapisan Servis:** Tugas berat seperti baca-tulis file (I/O) dan pemrosesan multimedia dipisah ke dalam servis khusus seperti `TimelineService`, `MediaService`, dan `PlaybackEngine`.
-- **Sistem Koordinat Kustom:** Mekanika seret-dan-lepas (drag-and-drop) di timeline dihitung menggunakan geometri `CoordinateSpace` kustom bawaan SwiftUI, memungkinkan deteksi persimpangan (intersection) antar frame dengan sangat akurat.
+**Persyaratan:**
+- macOS 14.0 Sonoma atau lebih baru
+- Xcode 16.0 atau lebih baru
+- Apple Silicon direkomendasikan (Intel tetap didukung)
 
----
+**Build dan Jalankan:**
+1. Clone repositori ini
+2. Buka `Kino.xcodeproj` di Xcode
+3. Pilih scheme "Kino" dan "My Mac" sebagai tujuan
+4. Tekan `Cmd + R`
 
-### ⚖️ Lisensi & Kontribusi
-Repositori ini dilisensikan di bawah **PolyForm Shield License 1.0.0**.
+Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
 
-**Apa artinya ini?**
-Anda sangat dianjurkan untuk membaca, mempelajari, mengkloning, dan mengambil ilmu dari kode sumber ini! Proyek ini berfungsi sebagai buku teks terbuka untuk membangun arsitektur AVFoundation yang kompleks di dalam SwiftUI.
-Namun, **Anda dilarang keras memodifikasi, mendistribusikan, atau menyalin kode ini untuk membuat produk komersial atau layanan pesaing.**
+## Lisensi
 
-Silakan baca file `LICENSE` untuk terminologi hukum selengkapnya. Jika Anda tertarik untuk memperbaiki bug atau berkontribusi untuk perbaikan non-komersial pada proyek ini, silakan baca file `CONTRIBUTING.md`.
+Proyek ini dilisensikan di bawah **PolyForm Shield License 1.0.0**.
+
+Anda bebas membaca, mempelajari, dan mengambil ilmu dari kode ini. Anda tidak diperbolehkan menggunakannya untuk membangun produk pesaing atau layanan komersial. Lihat `LICENSE` untuk ketentuan lengkapnya.
+
+Tertarik berkontribusi? Baca `CONTRIBUTING.md` untuk panduan mengenai laporan bug, permintaan fitur, dan pull request.
