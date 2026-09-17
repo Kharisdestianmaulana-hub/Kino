@@ -113,12 +113,51 @@ public class WorkspaceState: ObservableObject {
     public func addTextClip() {
         guard let seqID = selectedSequenceID,
               let proj = project,
-              let seq = proj.sequences.first(where: { $0.id == seqID }),
-              let videoTrack = seq.tracks.first(where: { $0.type == .video }) else { return }
+              var seq = proj.sequences.first(where: { $0.id == seqID }) else { return }
+        
+        let videoTracks = seq.tracks.filter { $0.type == .video }
+        var targetTrackID: UUID?
+        
+        // Find empty space in V2 or above
+        for i in (1..<videoTracks.count).reversed() {
+            let track = videoTracks[i]
+            let overlaps = track.clips.contains { clip in
+                let clipEnd = clip.timelineStart + clip.duration
+                let newEnd = playheadPosition + 5.0
+                return (playheadPosition < clipEnd) && (newEnd > clip.timelineStart)
+            }
+            if !overlaps {
+                targetTrackID = track.id
+                break
+            }
+        }
+        
+        // If no existing track >= V2 is free (or V2 doesn't exist), create one
+        if targetTrackID == nil {
+            let newTrackNum = videoTracks.count + 1
+            let newTrack = Track(name: "V\(newTrackNum)", type: .video)
+            
+            if let lastVideoIndex = seq.tracks.lastIndex(where: { $0.type == .video }) {
+                seq.tracks.insert(newTrack, at: lastVideoIndex + 1)
+            } else {
+                seq.tracks.insert(newTrack, at: 0)
+            }
+            
+            var updatedProject = proj
+            if let seqIdx = updatedProject.sequences.firstIndex(where: { $0.id == seqID }) {
+                updatedProject.sequences[seqIdx] = seq
+            }
+            self.projectService.updateCurrentProject(updatedProject)
+            self.project = updatedProject
+            
+            targetTrackID = newTrack.id
+        }
+        
+        guard let trackID = targetTrackID else { return }
         
         let textProps = TextProperties()
         let clip = Clip(textProperties: textProps, timelineStart: playheadPosition, sourceStart: 0, duration: 5.0)
-        let cmd = AddClipCommand(service: timelineService, sequenceID: seqID, trackID: videoTrack.id, clip: clip)
+        let cmd = AddClipCommand(service: timelineService, sequenceID: seqID, trackID: trackID, clip: clip)
         execute(cmd)
     }
     

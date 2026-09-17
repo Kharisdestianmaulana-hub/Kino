@@ -148,12 +148,12 @@ struct ClipInspectorView: View {
                             set: { textProperties?.fontSize = $0 }
                         ), range: 10...500, suffix: "pt", multiplier: 1, onEditingChanged: commitTransform)
                         
-                        ColorPicker("Color", selection: Binding(
+                        ColorPicker("Color", selection: Binding<Color>(
                             get: {
                                 if let hex = textProperties?.colorHex, let nsColor = NSColor(hex: hex) {
                                     return Color(nsColor)
                                 }
-                                return .white
+                                return Color.white
                             },
                             set: { newColor in
                                 guard let nsColor = NSColor(newColor).usingColorSpace(.deviceRGB) else { return }
