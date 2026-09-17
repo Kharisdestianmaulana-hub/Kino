@@ -307,20 +307,22 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
         ]
         
         let attrString = NSAttributedString(string: text, attributes: attributes)
-        let size = attrString.size()
+        let framesetter = CTFramesetterCreateWithAttributedString(attrString as CFAttributedString)
+        
+        let size = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), nil, CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude), nil)
+        
         let width = max(1, size.width)
         let height = max(1, size.height)
-        let rect = NSRect(origin: .zero, size: NSSize(width: width, height: height))
         
         guard let context = CGContext(data: nil, width: Int(width), height: Int(height), bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         
-        let nsContext = NSGraphicsContext(cgContext: context, flipped: false)
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = nsContext
+        let path = CGPath(rect: CGRect(x: 0, y: 0, width: width, height: height), transform: nil)
+        let frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, nil)
         
-        attrString.draw(in: rect)
+        context.clear(CGRect(x: 0, y: 0, width: width, height: height))
         
-        NSGraphicsContext.restoreGraphicsState()
+        // Draw the text
+        CTFrameDraw(frame, context)
         
         if let cgImage = context.makeImage() {
             return CIImage(cgImage: cgImage)
