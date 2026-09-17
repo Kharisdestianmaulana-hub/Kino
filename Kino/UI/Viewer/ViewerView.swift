@@ -75,6 +75,12 @@ public struct ViewerView: View {
                             }
                         }
                         .frame(width: canvasRect.width, height: canvasRect.height)
+                        // Delta transform: kompensasi selisih antara target (instant) vs rendered (lag CoreImage)
+                        // Saat tidak drag, delta = 0, SwiftUI tidak mengubah apapun
+                        .scaleEffect(deltaScale)
+                        .rotationEffect(.degrees(deltaRotation))
+                        .offset(x: deltaOffsetX, y: deltaOffsetY)
+                        .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
                     
                     if let img = previewImage {
@@ -179,6 +185,28 @@ public struct ViewerView: View {
             return .identity
         }
         return workspace.previewPresentationState
+    }
+    
+    // Delta = selisih antara transform yang diinginkan vs yang sudah di-render CoreImage
+    // Saat tidak drag: active == workspace → delta = 0 (identity)
+    // Saat drag: SwiftUI mengkompensasi lag CoreImage secara instan
+    private var deltaScale: CGFloat {
+        let desired = activePresentationState.transform.scale
+        let rendered = workspace.previewPresentationState.transform.scale
+        guard rendered > 0.001 else { return CGFloat(desired) }
+        return CGFloat(desired / rendered)
+    }
+    
+    private var deltaRotation: Double {
+        activePresentationState.transform.rotation - workspace.previewPresentationState.transform.rotation
+    }
+    
+    private var deltaOffsetX: CGFloat {
+        CGFloat(activePresentationState.transform.positionX - workspace.previewPresentationState.transform.positionX)
+    }
+    
+    private var deltaOffsetY: CGFloat {
+        CGFloat(activePresentationState.transform.positionY - workspace.previewPresentationState.transform.positionY)
     }
     
     private func updatePlayer(forceTimeline: Bool) {
