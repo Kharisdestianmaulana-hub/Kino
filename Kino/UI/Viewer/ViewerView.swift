@@ -68,7 +68,12 @@ public struct ViewerView: View {
                         }
                     
                     // Jangan di-destroy saat dragging, agar tidak flicker saat kembali!
-                    NativeVideoPlayer(player: player)
+                                            ZStack {
+                            NativeVideoPlayer(player: player)
+                            if workspace.isPlayheadInGap() {
+                                Color.black
+                            }
+                        }
                         .frame(width: canvasRect.width, height: canvasRect.height)
                         .scaleEffect(activePresentationState.transform.scale)
                         // Rotasi dari Inspector tetap dilayani oleh SwiftUI

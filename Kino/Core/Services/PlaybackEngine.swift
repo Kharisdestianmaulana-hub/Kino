@@ -296,7 +296,8 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
             
             let renderSize = instruction.renderSize
             var finalImage = CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: renderSize))
-            let currentTime = request.compositionTime.seconds
+                        let currentTime = request.compositionTime.seconds
+            print("[KinoVideoCompositor] Render requested for time: \(currentTime)")
             
             // Render tracks from bottom to top
             for (trackIndex, videoTrack) in instruction.videoTracks.enumerated().reversed() {

@@ -277,6 +277,19 @@ public class WorkspaceState: ObservableObject {
         }
     }
     
+        public func isPlayheadInGap() -> Bool {
+        guard let seqID = selectedSequenceID, let seq = project?.sequences.first(where: { $0.id == seqID }) else { return true }
+        let videoTracks = seq.tracks.filter { $0.type == .video }
+        for track in videoTracks {
+            for clip in track.clips {
+                if playheadPosition >= clip.timelineStart && playheadPosition < clip.timelineStart + clip.duration {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
     // MARK: - Playback Engine
     public let playbackEngine = PlaybackEngine()
     
