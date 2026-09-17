@@ -75,11 +75,13 @@ public struct ViewerView: View {
                             }
                         }
                         .frame(width: canvasRect.width, height: canvasRect.height)
-                        .scaleEffect(CGFloat(activePresentationState.transform.scale))
-                        .rotationEffect(.degrees(activePresentationState.transform.rotation))
+                        // SwiftUI transform HANYA aktif selama drag untuk instant feedback
+                        // Setelah commit (localDragTransform == nil), CoreImage yang handle → identity
+                        .scaleEffect(localDragTransform != nil ? CGFloat(activePresentationState.transform.scale) : 1.0)
+                        .rotationEffect(.degrees(localDragTransform != nil ? activePresentationState.transform.rotation : 0))
                         .position(
-                            x: canvasRect.midX + CGFloat(activePresentationState.transform.positionX),
-                            y: canvasRect.midY + CGFloat(activePresentationState.transform.positionY)
+                            x: canvasRect.midX + (localDragTransform != nil ? CGFloat(activePresentationState.transform.positionX) : 0),
+                            y: canvasRect.midY + (localDragTransform != nil ? CGFloat(activePresentationState.transform.positionY) : 0)
                         )
                         .transaction { $0.animation = nil }
                         .allowsHitTesting(false)
