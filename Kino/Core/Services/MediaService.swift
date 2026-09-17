@@ -74,7 +74,7 @@ public class WaveformGenerator {
                             
                             let length = CMBlockBufferGetDataLength(blockBuffer)
                             var data = Data(count: length)
-                            data.withUnsafeMutableBytes { buffer in
+                            _ = data.withUnsafeMutableBytes { buffer in
                                 _ = CMBlockBufferCopyDataBytes(blockBuffer, atOffset: 0, dataLength: length, destination: buffer.baseAddress!)
                             }
                             

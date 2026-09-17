@@ -130,26 +130,135 @@ public class PlaybackEngine {
             }
         }
         
-        let videoComposition = AVMutableVideoComposition(asset: composition) { request in
-            // Create a transparent background
+        let compTrackIDs = compVideoTracks.map { $0.trackID }
+        
+        let instruction = KinoVideoCompositionInstruction(
+            timeRange: CMTimeRange(start: .zero, duration: duration),
+            videoTracks: videoTracks,
+            compTrackIDs: compTrackIDs,
+            mediaReferences: mediaReferences,
+            imageCache: imageCache,
+            renderSize: renderSize
+        )
+        
+        let videoComposition = AVMutableVideoComposition()
+        videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
+        videoComposition.renderSize = renderSize
+        videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
+        videoComposition.instructions = [instruction]
+        
+        return videoComposition
+    }
+    
+    @MainActor
+    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset]) {
+        guard let composition = playerItem.asset as? AVMutableComposition else { return }
+        let renderSize = CGSize(width: 1920, height: 1080)
+        let duration = composition.duration
+        
+        if let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: duration) {
+            // Langsung assign videoComposition (akan re-trigger render graph)
+            playerItem.videoComposition = videoComposition
+        }
+        
+        // Update Audio
+        if let compAudioTrack = composition.tracks(withMediaType: .audio).first,
+           let audioTrack = sequence.tracks.first(where: { $0.type == .audio }) {
+            let audioMix = AVMutableAudioMix()
+            let ap = AVMutableAudioMixInputParameters(track: compAudioTrack)
+            for clip in audioTrack.clips {
+                let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
+                ap.setVolume(clip.volume, at: targetTime)
+            }
+            audioMix.inputParameters = [ap]
+            playerItem.audioMix = audioMix
+        }
+    }
+}
+import Foundation
+import AVFoundation
+import CoreGraphics
+import CoreImage
+import CoreVideo
+
+public class KinoVideoCompositionInstruction: NSObject, AVVideoCompositionInstructionProtocol {
+    public var timeRange: CMTimeRange
+    public var enablePostProcessing: Bool = false
+    public var containsTweening: Bool = true
+    public var requiredSourceTrackIDs: [NSValue]? = nil
+    public var passthroughTrackID: CMPersistentTrackID = kCMPersistentTrackID_Invalid
+    
+    // Custom data
+    public var videoTracks: [Track]
+    public var compTrackIDs: [CMPersistentTrackID]
+    public var mediaReferences: [MediaAsset]
+    public var imageCache: [UUID: CIImage]
+    public var renderSize: CGSize
+    
+    public init(timeRange: CMTimeRange, videoTracks: [Track], compTrackIDs: [CMPersistentTrackID], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize) {
+        self.timeRange = timeRange
+        self.videoTracks = videoTracks
+        self.compTrackIDs = compTrackIDs
+        self.mediaReferences = mediaReferences
+        self.imageCache = imageCache
+        self.renderSize = renderSize
+        
+        self.requiredSourceTrackIDs = compTrackIDs.map { NSNumber(value: $0) as NSValue }
+    }
+}
+
+public class KinoVideoCompositor: NSObject, AVVideoCompositing {
+    public var sourcePixelBufferAttributes: [String : Any]? = [
+        kCVPixelBufferPixelFormatTypeKey as String: [kCVPixelFormatType_32BGRA]
+    ]
+    
+    public var requiredPixelBufferAttributesForRenderContext: [String : Any] = [
+        kCVPixelBufferPixelFormatTypeKey as String: [kCVPixelFormatType_32BGRA]
+    ]
+    
+    private let renderContextQueue = DispatchQueue(label: "com.kino.renderContext")
+    private let renderingQueue = DispatchQueue(label: "com.kino.rendering")
+    private var renderContext: AVVideoCompositionRenderContext?
+    private let ciContext = CIContext(options: nil)
+    
+    public func renderContextChanged(_ newRenderContext: AVVideoCompositionRenderContext) {
+        renderContextQueue.sync {
+            self.renderContext = newRenderContext
+        }
+    }
+    
+    public func startRequest(_ request: AVAsynchronousVideoCompositionRequest) {
+        renderingQueue.async {
+            guard let instruction = request.videoCompositionInstruction as? KinoVideoCompositionInstruction else {
+                request.finish(with: NSError(domain: "com.kino", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid instruction type"]))
+                return
+            }
+            
+            guard let pixelBuffer = self.renderContext?.newPixelBuffer() else {
+                request.finish(with: NSError(domain: "com.kino", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to create pixel buffer"]))
+                return
+            }
+            
+            let renderSize = instruction.renderSize
             var finalImage = CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: renderSize))
             let currentTime = request.compositionTime.seconds
             
             // Render tracks from bottom to top
-            for (trackIndex, videoTrack) in videoTracks.enumerated().reversed() {
-                let compTrack = compVideoTracks[trackIndex]
+            for (trackIndex, videoTrack) in instruction.videoTracks.enumerated().reversed() {
+                let trackID = instruction.compTrackIDs[trackIndex]
                 
-                // Find clip at current time
                 if let clip = videoTrack.clips.first(where: { currentTime >= $0.timelineStart && currentTime < $0.timelineStart + $0.duration }) {
                     
-                    guard let assetRef = mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
+                    guard let assetRef = instruction.mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
                     
                     var sourceImage: CIImage? = nil
                     
                     if assetRef.metadata.isImage {
-                        sourceImage = imageCache[assetRef.id]
+                        sourceImage = instruction.imageCache[assetRef.id]
                     } else {
-                        sourceImage = request.sourceFrameByTrackID(compTrack.trackID)
+                        if let pixelBuf = request.sourceFrame(byTrackID: trackID) {
+                            sourceImage = CIImage(cvPixelBuffer: pixelBuf)
+                        }
                     }
                     
                     if var img = sourceImage {
@@ -185,7 +294,6 @@ public class PlaybackEngine {
                         
                         img = img.transformed(by: transform)
                         
-                        // Apply opacity
                         let opacity = CGFloat(clip.transform.opacity)
                         if opacity < 1.0 {
                             let filter = CIFilter(name: "CIColorMatrix")!
@@ -200,36 +308,9 @@ public class PlaybackEngine {
                     }
                 }
             }
-            request.finish(with: finalImage, context: nil)
-        }
-        
-        videoComposition.renderSize = renderSize
-        videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
-        return videoComposition
-    }
-    
-    @MainActor
-    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset]) {
-        guard let composition = playerItem.asset as? AVMutableComposition else { return }
-        let renderSize = CGSize(width: 1920, height: 1080)
-        let duration = composition.duration
-        
-        if let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: duration) {
-            // Langsung assign videoComposition (akan re-trigger render graph)
-            playerItem.videoComposition = videoComposition
-        }
-        
-        // Update Audio
-        if let compAudioTrack = composition.tracks(withMediaType: .audio).first,
-           let audioTrack = sequence.tracks.first(where: { $0.type == .audio }) {
-            let audioMix = AVMutableAudioMix()
-            let ap = AVMutableAudioMixInputParameters(track: compAudioTrack)
-            for clip in audioTrack.clips {
-                let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
-                ap.setVolume(clip.volume, at: targetTime)
-            }
-            audioMix.inputParameters = [ap]
-            playerItem.audioMix = audioMix
+            
+            self.ciContext.render(finalImage, to: pixelBuffer)
+            request.finish(withComposedVideoFrame: pixelBuffer)
         }
     }
 }
