@@ -24,10 +24,15 @@ public struct ClipView: View {
     }
     
     private var assetName: String {
-        asset?.originalURL.lastPathComponent ?? "Clip"
+        if let text = clip.textProperties?.text {
+            return text.isEmpty ? "Empty Text" : text
+        }
+        return asset?.originalURL.lastPathComponent ?? "Clip"
     }
     
     private func loadThumbnail() async {
+        if clip.textProperties != nil { return } // Text clips don't have file thumbnails
+        
         let cacheKey = "\(clip.id.uuidString)_\(trackType.rawValue)"
         if let cached = ThumbnailCache.shared.getThumbnail(for: cacheKey) {
             await MainActor.run { self.thumbnail = cached }
@@ -109,7 +114,7 @@ public struct ClipView: View {
         
         return ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.gray.opacity(0.3))
+                .fill(clip.textProperties != nil ? Color.purple.opacity(0.4) : Color.gray.opacity(0.3))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)

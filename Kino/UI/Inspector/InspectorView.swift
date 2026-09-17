@@ -113,6 +113,7 @@ struct ClipInspectorView: View {
     
     @State private var transform: ClipTransform
     @State private var volume: Float
+    @State private var textProperties: TextProperties?
     @State private var isEditing = false
     @State private var editStartClip: Clip? = nil
     
@@ -122,12 +123,35 @@ struct ClipInspectorView: View {
         self.trackID = trackID
         _transform = State(initialValue: clip.transform)
         _volume = State(initialValue: clip.volume)
+        _textProperties = State(initialValue: clip.textProperties)
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Clip")
                 .font(.headline)
+            
+            if let _ = textProperties {
+                VStack(alignment: .leading, spacing: 16) {
+                    InspectorSectionHeader(title: "TEXT")
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        TextField("Text", text: Binding(
+                            get: { textProperties?.text ?? "" },
+                            set: { textProperties?.text = $0 }
+                        ))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onChange(of: textProperties?.text) { _ in commitTransform(editing: false) }
+                        
+                        InspectorSliderField(title: "Font Size", value: Binding(
+                            get: { textProperties?.fontSize ?? 100 },
+                            set: { textProperties?.fontSize = $0 }
+                        ), range: 10...500, suffix: "pt", multiplier: 1, onEditingChanged: commitTransform)
+                    }
+                }
+                
+                Divider().opacity(0.5)
+            }
             
             VStack(alignment: .leading, spacing: 16) {
                 InspectorSectionHeader(title: "TRANSFORM")
@@ -160,6 +184,7 @@ struct ClipInspectorView: View {
             if !isEditing {
                 transform = newClip.transform
                 volume = newClip.volume
+                textProperties = newClip.textProperties
             }
         }
         .onChange(of: transform) { newTransform in
@@ -167,6 +192,7 @@ struct ClipInspectorView: View {
                 var newClip = clip
                 newClip.transform = newTransform
                 newClip.volume = volume
+                newClip.textProperties = textProperties
                 workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
             }
         }
@@ -175,6 +201,7 @@ struct ClipInspectorView: View {
                 var newClip = clip
                 newClip.transform = transform
                 newClip.volume = newVolume
+                newClip.textProperties = textProperties
                 workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
             }
         }
@@ -189,6 +216,7 @@ struct ClipInspectorView: View {
         var newClip = clip
         newClip.transform = transform
         newClip.volume = volume
+        newClip.textProperties = textProperties
         
         if editing {
             workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)

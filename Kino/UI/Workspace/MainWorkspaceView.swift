@@ -69,6 +69,15 @@ public struct MainWorkspaceView: View {
                     }
                     
                     Button(action: {
+                        workspace.addTextClip()
+                    }) {
+                        Image(systemName: "textformat")
+                        Text("Text")
+                    }
+                    .keyboardShortcut("t", modifiers: .command)
+                    .help("Add Text Clip (Cmd+T)")
+                    
+                    Button(action: {
                         workspace.startExport()
                     }) {
                         Image(systemName: "square.and.arrow.up")

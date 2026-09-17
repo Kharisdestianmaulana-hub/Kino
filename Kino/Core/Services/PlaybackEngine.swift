@@ -282,6 +282,43 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
         }
     }
     
+    private func renderText(_ props: TextProperties, renderSize: CGSize) -> CIImage? {
+        let text = props.text.isEmpty ? " " : props.text
+        
+        let nsColor = NSColor(hex: props.colorHex) ?? NSColor.white
+        let nsFont = NSFont(name: props.fontName, size: CGFloat(props.fontSize)) ?? NSFont.systemFont(ofSize: CGFloat(props.fontSize))
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = props.alignment == 0 ? .left : (props.alignment == 1 ? .center : .right)
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: nsFont,
+            .foregroundColor: nsColor,
+            .paragraphStyle: paragraphStyle
+        ]
+        
+        let attrString = NSAttributedString(string: text, attributes: attributes)
+        let size = attrString.size()
+        let width = max(1, size.width)
+        let height = max(1, size.height)
+        let rect = NSRect(origin: .zero, size: NSSize(width: width, height: height))
+        
+        guard let context = CGContext(data: nil, width: Int(width), height: Int(height), bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        
+        let nsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = nsContext
+        
+        attrString.draw(in: rect)
+        
+        NSGraphicsContext.restoreGraphicsState()
+        
+        if let cgImage = context.makeImage() {
+            return CIImage(cgImage: cgImage)
+        }
+        return nil
+    }
+    
     public func startRequest(_ request: AVAsynchronousVideoCompositionRequest) {
         renderingQueue.async {
             guard let instruction = request.videoCompositionInstruction as? KinoVideoCompositionInstruction else {
@@ -305,15 +342,17 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                 
                 if let clip = videoTrack.clips.first(where: { currentTime >= $0.timelineStart && currentTime < $0.timelineStart + $0.duration }) {
                     
-                    guard let assetRef = instruction.mediaReferences.first(where: { $0.id == clip.mediaAssetID }) else { continue }
-                    
                     var sourceImage: CIImage? = nil
                     
-                    if assetRef.metadata.isImage {
-                        sourceImage = instruction.imageCache[assetRef.id]
-                    } else {
-                        if let pixelBuf = request.sourceFrame(byTrackID: trackID) {
-                            sourceImage = CIImage(cvPixelBuffer: pixelBuf)
+                    if let textProps = clip.textProperties {
+                        sourceImage = self.renderText(textProps, renderSize: renderSize)
+                    } else if let assetRef = instruction.mediaReferences.first(where: { $0.id == clip.mediaAssetID }) {
+                        if assetRef.metadata.isImage {
+                            sourceImage = instruction.imageCache[assetRef.id]
+                        } else {
+                            if let pixelBuf = request.sourceFrame(byTrackID: trackID) {
+                                sourceImage = CIImage(cvPixelBuffer: pixelBuf)
+                            }
                         }
                     }
                     
@@ -371,5 +410,29 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
             self.ciContext.render(finalImage, to: pixelBuffer)
             request.finish(withComposedVideoFrame: pixelBuffer)
         }
+    }
+}
+
+extension NSColor {
+    convenience init?(hex: String) {
+        let r, g, b, a: CGFloat
+        var hexColor = hex
+        if hexColor.hasPrefix("#") {
+            let start = hexColor.index(hexColor.startIndex, offsetBy: 1)
+            hexColor = String(hexColor[start...])
+        }
+        if hexColor.count == 6 {
+            let scanner = Scanner(string: hexColor)
+            var hexNumber: UInt64 = 0
+            if scanner.scanHexInt64(&hexNumber) {
+                r = CGFloat((hexNumber & 0xff0000) >> 16) / 255
+                g = CGFloat((hexNumber & 0x00ff00) >> 8) / 255
+                b = CGFloat(hexNumber & 0x0000ff) / 255
+                a = 1.0
+                self.init(red: r, green: g, blue: b, alpha: a)
+                return
+            }
+        }
+        return nil
     }
 }

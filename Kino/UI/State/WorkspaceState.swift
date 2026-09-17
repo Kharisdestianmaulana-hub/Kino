@@ -110,6 +110,18 @@ public class WorkspaceState: ObservableObject {
         execute(cmd)
     }
     
+    public func addTextClip() {
+        guard let seqID = selectedSequenceID,
+              let proj = project,
+              let seq = proj.sequences.first(where: { $0.id == seqID }),
+              let videoTrack = seq.tracks.first(where: { $0.type == .video }) else { return }
+        
+        let textProps = TextProperties()
+        let clip = Clip(textProperties: textProps, timelineStart: currentTime, sourceStart: 0, duration: 5.0)
+        let cmd = AddClipCommand(service: timelineService, sequenceID: seqID, trackID: videoTrack.id, clip: clip)
+        execute(cmd)
+    }
+    
     public func execute(_ command: Command) {
         do {
             try commandManager.execute(command)
