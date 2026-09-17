@@ -109,7 +109,11 @@ public struct ClipView: View {
         
         return ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(isSelected ? Color.accentColor : Color.gray.opacity(0.3))
+                .fill(Color.gray.opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
+                )
             
             GeometryReader { geo in
                 if trackType == .video {
@@ -163,10 +167,25 @@ public struct ClipView: View {
         .frame(width: max(CGFloat(currentDuration) * timeScale, 5))
         .offset(x: (CGFloat(currentTimelineStart) * timeScale) + dragOffset)
         .overlay(
-            HStack(spacing: 0) {
-                // Left edge hover detection
-                Rectangle()
-                    .fill(Color.clear)
+            ZStack {
+                // Selection Border
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color.accentColor, lineWidth: 2)
+                }
+                
+                HStack(spacing: 0) {
+                    // Left edge hover detection
+                    ZStack {
+                        Rectangle()
+                            .fill(Color.clear)
+                        
+                        if isSelected {
+                            Rectangle()
+                                .fill(Color.accentColor)
+                                .frame(width: 4)
+                        }
+                    }
                     .frame(width: 10)
                     .onHover { isHovering in
                         if isHovering && workspace.activeTool != .blade {
@@ -175,25 +194,33 @@ public struct ClipView: View {
                             NSCursor.pop()
                         }
                     }
-                
-                // Center hover detection
-                Rectangle()
-                    .fill(Color.clear)
-                    .onHover { isHovering in
-                        if isHovering {
-                            if workspace.activeTool == .blade {
-                                NSCursor.crosshair.push()
+                    
+                    // Center hover detection
+                    Rectangle()
+                        .fill(Color.clear)
+                        .onHover { isHovering in
+                            if isHovering {
+                                if workspace.activeTool == .blade {
+                                    NSCursor.crosshair.push()
+                                } else {
+                                    NSCursor.pointingHand.push()
+                                }
                             } else {
-                                NSCursor.pointingHand.push()
+                                NSCursor.pop()
                             }
-                        } else {
-                            NSCursor.pop()
+                        }
+                    
+                    // Right edge hover detection
+                    ZStack {
+                        Rectangle()
+                            .fill(Color.clear)
+                        
+                        if isSelected {
+                            Rectangle()
+                                .fill(Color.accentColor)
+                                .frame(width: 4)
                         }
                     }
-                
-                // Right edge hover detection
-                Rectangle()
-                    .fill(Color.clear)
                     .frame(width: 10)
                     .onHover { isHovering in
                         if isHovering && workspace.activeTool != .blade {
@@ -202,6 +229,7 @@ public struct ClipView: View {
                             NSCursor.pop()
                         }
                     }
+                }
             }
         )
         .task {
