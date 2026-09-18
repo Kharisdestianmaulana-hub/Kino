@@ -100,10 +100,13 @@ Kino is currently moving towards its v1.0 release. It is being developed by a sm
 | **Auto-Overlay** | Drop a clip on top of another and Kino automatically places it on a higher track instead of overwriting. No more accidental deletions. |
 | **Linked Audio/Video** | Importing a video automatically extracts and links its audio track. Move them together, or right-click to unlink for precise J/L cuts. |
 | **GPU Playback** | The playback engine wraps `AVMutableComposition` with custom `AVMutableVideoComposition` instructions for real-time opacity, scale, and transform blending. |
+| **Offline Media Warning** | Smartly detects when media is moved or deleted, instantly providing a visual "Offline" warning with yellow-black stripes on the canvas without crashing the app. Complete with a "Relink" feature. |
+| **Text & Typography** | Custom text engine supporting font changes, colors (native macOS Color Picker), bounding box scaling, and instant text alignment. |
+| **Autosave System** | Projects are automatically saved in the background upon any significant change, ensuring no edits are lost during power outages or sudden app closures. |
 | **Real Waveforms** | Audio waveforms are generated from actual 16-bit PCM sample data via `AVAssetReader`, not random squiggly lines. Silent tracks show as flat lines so you know immediately. |
 | **Thumbnail Cache** | A thread-safe in-memory cache ensures that scrolling through hundreds of media assets stays at 60fps. Thumbnails and waveforms are generated once, then served from memory. |
-| **Inspector Panel** | Adjust position, scale, and rotation through precise sliders, or drag directly on the canvas for visual editing. |
-| **Command Pattern** | Every timeline action is wrapped in a reversible command object (`MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`), providing the foundation for full undo/redo history. |
+| **Inspector Panel** | Displays comprehensive media file info (resolution, framerate, status) and provides precise sliders to adjust clip properties in the timeline. |
+| **Command Pattern** | Every timeline action is wrapped in a reversible command object (`MoveClipCommand`, `SplitClipCommand`), providing the foundation for full undo/redo history. |
 
 ## Architecture
 
@@ -175,7 +178,10 @@ Kino uses a **Modular Feature Strategy**. The Core provides a complete basic edi
 | ✅ Stable | Full undo/redo history |
 | ✅ Stable | Razor / Blade tool (Split clips) |
 | ✅ Stable | Clip edge trimming (Drag to resize) |
-| ✅ Stable | Text and title overlays |
+| ✅ Stable | Text & Title overlays |
+| ✅ Stable | Autosave & Recovery system |
+| ✅ Stable | Missing-media detection & relinking |
+| ✅ Stable | Comprehensive metadata inspector |
 | 📋 Planned | Module 1: Effects |
 | 📋 Planned | Module 2: Transitions |
 | 📋 Planned | Module 3: Advanced Subtitles |
@@ -345,10 +351,10 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 | ✅ Stable | Riwayat undo/redo penuh |
 | ✅ Stable | Alat pemotong / Razor tool (Split klip) |
 | ✅ Stable | Pemangkasan ujung klip (Clip trimming) |
-| ✅ Stable | Overlay teks / Text & Title overlays |
-| ✅ Stable | Penyimpanan otomatis / Autosave & Recovery |
-| ✅ Stable | Deteksi media hilang / Missing-media detection & relinking |
-| ✅ Stable | Metadata inspektur / Comprehensive metadata inspector |
+| ✅ Stable | Overlay teks dan judul |
+| ✅ Stable | Sistem Autosave & Recovery cerdas |
+| ✅ Stable | Manajemen Media Offline & Relinking |
+| ✅ Stable | Metadata Inspector ekstensif |
 | 📋 Planned | Modul 1: Efek (Effects) |
 | 📋 Planned | Modul 2: Transisi (Transitions) |
 | 📋 Planned | Modul 3: Subtitle Lanjutan |
