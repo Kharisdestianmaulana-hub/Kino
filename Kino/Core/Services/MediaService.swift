@@ -29,11 +29,43 @@ public class MediaService {
         let asset = AVURLAsset(url: originalURL)
         let duration = asset.duration.seconds.isNaN ? 0 : asset.duration.seconds
         
-        // Cek secara sederhana apakah memiliki trek video dan audio
-        let hasVideo = !asset.tracks(withMediaType: .video).isEmpty
-        let hasAudio = !asset.tracks(withMediaType: .audio).isEmpty
+        let videoTracks = asset.tracks(withMediaType: .video)
+        let audioTracks = asset.tracks(withMediaType: .audio)
+        let hasVideo = !videoTracks.isEmpty
+        let hasAudio = !audioTracks.isEmpty
         
-        let metadata = MediaMetadata(duration: isImage ? 5.0 : duration, hasVideo: hasVideo, hasAudio: hasAudio, isImage: isImage)
+        var resolutionWidth: Int? = nil
+        var resolutionHeight: Int? = nil
+        var frameRate: Double? = nil
+        
+        if let vTrack = videoTracks.first {
+            let size = vTrack.naturalSize.applying(vTrack.preferredTransform)
+            resolutionWidth = Int(abs(size.width))
+            resolutionHeight = Int(abs(size.height))
+            frameRate = Double(vTrack.nominalFrameRate)
+        } else if isImage {
+            if let nsImage = NSImage(contentsOf: originalURL) {
+                resolutionWidth = Int(nsImage.size.width)
+                resolutionHeight = Int(nsImage.size.height)
+            }
+        }
+        
+        var fileSizeBytes: Int64? = nil
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: originalURL.path),
+           let size = attrs[.size] as? Int64 {
+            fileSizeBytes = size
+        }
+        
+        let metadata = MediaMetadata(
+            duration: isImage ? 5.0 : duration,
+            hasVideo: hasVideo,
+            hasAudio: hasAudio,
+            isImage: isImage,
+            resolutionWidth: resolutionWidth,
+            resolutionHeight: resolutionHeight,
+            frameRate: frameRate,
+            fileSizeBytes: fileSizeBytes
+        )
         
         return MediaAsset(originalURL: originalURL, bookmarkData: bookmarkData, metadata: metadata)
     }
@@ -43,6 +75,47 @@ public class MediaService {
         if !project.mediaReferences.contains(where: { $0.id == asset.id }) {
             project.mediaReferences.append(asset)
         }
+    }
+    
+    /// Verifies all media references in a project. Flags them as isMissing if the file cannot be found.
+    public func verifyMediaReferences(in project: inout Project) {
+        for i in 0..<project.mediaReferences.count {
+            let asset = project.mediaReferences[i]
+            var exists = false
+            
+            if let bookmark = asset.bookmarkData {
+                var isStale = false
+                if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
+                    exists = FileManager.default.fileExists(atPath: url.path)
+                    
+                    if exists && isStale {
+                        // Auto-update stale bookmark
+                        let isSecurityScoped = url.startAccessingSecurityScopedResource()
+                        if let newBookmark = try? url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil) {
+                            project.mediaReferences[i].bookmarkData = newBookmark
+                        }
+                        if isSecurityScoped { url.stopAccessingSecurityScopedResource() }
+                    }
+                }
+            } else {
+                exists = FileManager.default.fileExists(atPath: asset.originalURL.path)
+            }
+            
+            project.mediaReferences[i].isMissing = !exists
+        }
+    }
+    
+    /// Relinks a missing asset to a newly selected URL.
+    public func relinkAsset(id: UUID, newURL: URL, into project: inout Project) throws {
+        guard let index = project.mediaReferences.firstIndex(where: { $0.id == id }) else { return }
+        
+        let isSecurityScoped = newURL.startAccessingSecurityScopedResource()
+        let bookmarkData = try newURL.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+        if isSecurityScoped { newURL.stopAccessingSecurityScopedResource() }
+        
+        project.mediaReferences[index].originalURL = newURL
+        project.mediaReferences[index].bookmarkData = bookmarkData
+        project.mediaReferences[index].isMissing = false
     }
 }
 

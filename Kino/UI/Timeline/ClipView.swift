@@ -40,6 +40,7 @@ public struct ClipView: View {
         }
         
         guard let asset = asset, let bookmark = asset.bookmarkData else { return }
+        if asset.isMissing { return }
               
         let ext = asset.originalURL.pathExtension.lowercased()
         let isImage = ["png", "jpg", "jpeg", "heic", "tiff"].contains(ext)
@@ -112,16 +113,30 @@ public struct ClipView: View {
             return clip.timelineStart
         }
         
+        let isMissing = asset?.isMissing == true
+        
         return ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(clip.textProperties != nil ? Color.purple.opacity(0.4) : Color.gray.opacity(0.3))
+                .fill(isMissing ? Color.red.opacity(0.8) : (clip.textProperties != nil ? Color.purple.opacity(0.4) : Color.gray.opacity(0.3)))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
                 )
             
             GeometryReader { geo in
-                if trackType == .video {
+                if isMissing {
+                    HStack {
+                        Spacer()
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.white)
+                            .font(.caption)
+                        Text("Offline")
+                            .foregroundColor(.white)
+                            .font(.caption.bold())
+                        Spacer()
+                    }
+                    .frame(height: geo.size.height)
+                } else if trackType == .video {
                     if let thumb = thumbnail {
                         Image(nsImage: thumb)
                             .resizable()

@@ -315,8 +315,12 @@ public class WorkspaceState: ObservableObject {
         }
         activeSecurityURLs.removeAll()
         
-        guard let project = project else { return }
-        for asset in project.mediaReferences {
+        guard project != nil else { return }
+        
+        // Verifikasi status file (isMissing)
+        mediaService.verifyMediaReferences(in: &project!)
+        
+        for asset in project!.mediaReferences {
             if let bookmark = asset.bookmarkData {
                 var isStale = false
                 if let url = try? URL(resolvingBookmarkData: bookmark, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale) {
@@ -328,7 +332,44 @@ public class WorkspaceState: ObservableObject {
         }
     }
     
-        public func isPlayheadInGap() -> Bool {
+    public func relinkAsset(id: UUID) {
+        guard project != nil else { return }
+        
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                try mediaService.relinkAsset(id: id, newURL: url, into: &project!)
+                self.restoreSecurityBookmarks()
+                self.rebuildComposition()
+                self.hasUnsavedChanges = true
+                print("Successfully relinked asset to \(url.lastPathComponent)")
+            } catch {
+                print("Failed to relink asset: \(error)")
+            }
+        }
+    }
+    public var isPlayheadOverMissingMedia: Bool {
+        guard let project = project, let seqID = selectedSequenceID,
+              let seq = project.sequences.first(where: { $0.id == seqID }) else { return false }
+        
+        for track in seq.tracks {
+            for clip in track.clips {
+                if playheadPosition >= clip.timelineStart && playheadPosition < clip.timelineStart + clip.duration {
+                    if let assetID = clip.mediaAssetID,
+                       let asset = project.mediaReferences.first(where: { $0.id == assetID }),
+                       asset.isMissing {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    public func isPlayheadInGap() -> Bool {
         guard let seqID = selectedSequenceID, let seq = project?.sequences.first(where: { $0.id == seqID }) else { return true }
         let videoTracks = seq.tracks.filter { $0.type == .video }
         for track in videoTracks {

@@ -82,10 +82,35 @@ public struct InspectorView: View {
             VStack(alignment: .leading, spacing: 12) {
                 InspectorRow(title: "Name", value: asset.originalURL.lastPathComponent)
                 InspectorRow(title: "Type", value: asset.metadata.isImage ? "Photo" : "Video/Audio")
+                InspectorRow(title: "Status", value: asset.isMissing ? "Offline ⚠️" : "Online ✅")
+                
                 if !asset.metadata.isImage && asset.metadata.duration > 0 {
                     let mins = Int(asset.metadata.duration) / 60
                     let secs = Int(asset.metadata.duration) % 60
                     InspectorRow(title: "Duration", value: String(format: "%02d:%02d", mins, secs))
+                }
+                
+                if let w = asset.metadata.resolutionWidth, let h = asset.metadata.resolutionHeight {
+                    InspectorRow(title: "Resolution", value: "\(w) × \(h)")
+                }
+                
+                if let fps = asset.metadata.frameRate, fps > 0 {
+                    InspectorRow(title: "Frame Rate", value: String(format: "%.2f fps", fps))
+                }
+                
+                if let bytes = asset.metadata.fileSizeBytes {
+                    InspectorRow(title: "File Size", value: ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("File Path")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(asset.originalURL.path)
+                        .font(.caption2)
+                        .lineLimit(3)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled) // Agar path bisa dicopy oleh user
                 }
             }
         }

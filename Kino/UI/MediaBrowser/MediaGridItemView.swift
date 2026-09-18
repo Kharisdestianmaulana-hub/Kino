@@ -17,7 +17,16 @@ public struct MediaGridItemView: View {
                     .fill(Color.black.opacity(0.4))
                     .aspectRatio(16/9, contentMode: .fit)
                 
-                if let img = thumbnail {
+                if asset.isMissing {
+                    VStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.red)
+                        Text("Offline")
+                            .font(.caption2.bold())
+                            .foregroundColor(.red)
+                    }
+                } else if let img = thumbnail {
                     Image(nsImage: img)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -77,6 +86,13 @@ public struct MediaGridItemView: View {
         }
         // Fallback jika Drag & Drop gagal di environment OS user:
         .contextMenu {
+            if asset.isMissing {
+                Button("Relink Media...") {
+                    workspace.relinkAsset(id: asset.id)
+                }
+                Divider()
+            }
+            
             Button("Add to Timeline") {
                 workspace.appendAssetToTimeline(asset)
             }
@@ -92,6 +108,8 @@ public struct MediaGridItemView: View {
     }
     
     private func loadThumbnail() async {
+        if asset.isMissing { return }
+        
         let cacheKey = asset.id.uuidString
         if let cached = ThumbnailCache.shared.getThumbnail(for: cacheKey) {
             await MainActor.run { self.thumbnail = cached }

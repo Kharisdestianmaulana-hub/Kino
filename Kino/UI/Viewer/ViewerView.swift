@@ -101,7 +101,14 @@ public struct ViewerView: View {
                             lagMaskingStartTransform: $lagMaskingStartTransform
                         )
                     }
+                    
+                    if workspace.isPlayheadOverMissingMedia {
+                        PoliceStripesOverlay()
+                            .frame(width: canvasRect.width, height: canvasRect.height)
+                            .clipped()
+                    }
                 }
+                .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
             }
             
             HStack(spacing: 24) {
@@ -132,12 +139,16 @@ public struct ViewerView: View {
             if !workspace.isPlaying { updatePlayer(forceTimeline: false) }
         }
         .onChange(of: workspace.isPlaying) { playing in
+            let isMediaPreview: Bool = {
+                if case .mediaAsset = workspace.selection { return true }
+                return false
+            }()
+            
             if playing {
-                updatePlayer(forceTimeline: true)
+                updatePlayer(forceTimeline: !isMediaPreview)
                 player.play()
             } else {
                 player.pause()
-                updatePlayer(forceTimeline: true)
             }
         }
         // Listener utama: tangkap perubahan item komposisi baru (saat drag selesai)
@@ -657,3 +668,41 @@ private final class ViewerRotateCursor {
     }
 }
 
+
+private struct PoliceStripesOverlay: View {
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                let diag = hypot(geo.size.width, geo.size.height)
+                HStack(spacing: 0) {
+                    ForEach(0..<100, id: \.self) { i in
+                        Rectangle()
+                            .fill(i % 2 == 0 ? Color.yellow : Color.black)
+                            .frame(width: 40)
+                    }
+                }
+                .frame(width: diag, height: diag)
+                .rotationEffect(.degrees(-45))
+                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                .opacity(0.8)
+                
+                Color.black.opacity(0.6)
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 64))
+                        .foregroundColor(.yellow)
+                        .shadow(color: .black, radius: 8)
+                    Text("Media Not Found")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(color: .black, radius: 8)
+                    Text("Please relink media in the Media Browser")
+                        .font(.headline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .shadow(color: .black, radius: 4)
+                }
+            }
+        }
+    }
+}
