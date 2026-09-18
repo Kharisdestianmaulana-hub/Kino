@@ -55,10 +55,13 @@ Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It us
 
 <div align="center">
   <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
-  <br/><br/>
-    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
-  <br/><br/>
+  <br/><i>Initial empty workspace when opening the app</i><br/><br/><br/>
+  
+  <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+  <br/><i>Populated workspace with video and media assets</i><br/><br/><br/>
+  
   <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
+  <br/><i>Workflow demo: From app launch to opening a project</i>
 </div>
 
 While professional NLEs like Final Cut Pro set the standard for native macOS performance, Kino differentiates itself through a filesystem-first approach, modular architecture, and an intentionally educational codebase. Every line of code is written specifically for macOS, taking advantage of hardware-accelerated decoding and Metal-backed rendering.
@@ -219,10 +222,13 @@ Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya 
 
 <div align="center">
   <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
-  <br/><br/>
-    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
-  <br/><br/>
+  <br/><i>Tampilan awal saat aplikasi baru dibuka</i><br/><br/><br/>
+  
+  <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+  <br/><i>Tampilan saat workspace sudah terisi video dan aset media</i><br/><br/><br/>
+  
   <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
+  <br/><i>Demo alur kerja: Dari awal membuka aplikasi hingga memuat project</i>
 </div>
 
 Meski editor profesional seperti Final Cut Pro telah menetapkan standar performa native di macOS, Kino membedakan dirinya melalui pendekatan filesystem-first, arsitektur modular, dan basis kode yang sengaja dibuat edukatif. Setiap baris kode ditulis spesifik untuk macOS, memanfaatkan akselerasi perangkat keras untuk decoding dan rendering berbasis Metal.
