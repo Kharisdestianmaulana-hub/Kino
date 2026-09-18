@@ -6,6 +6,10 @@ Because Kino is licensed under the PolyForm Shield License 1.0.0, the rules of e
 
 Please read this document thoroughly before submitting any Issues or Pull Requests.
 
+Before starting any development, you are **required** to read the relevant architecture documentation in the [`Docs/`](Docs/) folder (such as `Docs/ARCHITECTURE.md`, `Docs/MODULE_SYSTEM.md`, and `Docs/PRD.md`). Understanding the modular architecture is mandatory before writing code.
+
+> **Note:** Kino is currently in active development heading towards its v1.0 release. Contributors should be prepared for ongoing architectural changes, shifting module APIs, and areas of the codebase that are not yet fully stabilized.
+
 ---
 
 ## 1. Licensing and Legal Compliance
@@ -42,7 +46,7 @@ Detailed and reproducible issue reports are critical to maintaining the stabilit
 
 ## 3. Feature Requests
 
-Kino adheres to a strict design philosophy: native performance, minimal dependencies, and no electron/web-wrapper compromises. 
+Kino adheres to a strict design philosophy focused on native macOS performance, minimal dependencies, and a clean, educational architecture. 
 
 Before requesting a feature or starting development on one, please open a Discussion thread or an Issue labeled `enhancement`. 
 
@@ -83,3 +87,97 @@ To submit your code, follow this standardized workflow:
 Code review may require multiple iterations. Please be patient and responsive to architectural feedback.
 
 Thank you for your contributions to Kino.
+
+
+---
+---
+
+# Berkontribusi ke Kino
+
+Terima kasih atas ketertarikan Anda untuk berkontribusi ke Kino. Kino adalah aplikasi penyunting video non-linear (NLE) native macOS berperforma tinggi.
+
+Karena Kino dilisensikan di bawah PolyForm Shield License 1.0.0, aturan mainnya berbeda dari proyek open-source standar (seperti yang berlisensi MIT atau GPL). Dokumen ini menguraikan batasan hukum, pedoman arsitektur, dan standar teknis yang diperlukan untuk berkontribusi.
+
+Harap baca dokumen ini secara menyeluruh sebelum mengirimkan Issue atau Pull Request.
+
+Sebelum memulai pengembangan apa pun, Anda **diwajibkan** untuk membaca dokumentasi arsitektur yang relevan di folder [`Docs/`](Docs/) (seperti `Docs/ARCHITECTURE.md`, `Docs/MODULE_SYSTEM.md`, dan `Docs/PRD.md`). Memahami arsitektur modular adalah syarat wajib sebelum mulai menulis kode.
+
+> **Catatan:** Kino saat ini sedang dalam tahap pengembangan aktif menuju rilis v1.0. Kontributor harus siap dengan kemungkinan perubahan arsitektur yang terus berjalan, pergeseran API modul, dan area basis kode yang belum sepenuhnya stabil.
+
+---
+
+## 1. Lisensi dan Kepatuhan Hukum
+
+Kino didistribusikan di bawah PolyForm Shield License 1.0.0. Lisensi ini memberikan hak spesifik dan memberlakukan batasan yang ketat:
+
+### Tindakan yang Diizinkan
+*   **Studi Edukasi**: Anda memiliki akses tanpa batas untuk membaca, menganalisis, dan belajar dari kode sumber. Repositori ini berfungsi sebagai implementasi referensi untuk SwiftUI, AVFoundation, dan CoreImage di macOS.
+*   **Penggunaan Pribadi**: Anda boleh mengompilasi, mem-build, dan menjalankan aplikasi di mesin lokal Anda sendiri untuk keperluan penyuntingan video pribadi.
+*   **Modifikasi Internal**: Anda boleh memodifikasi kode sumber untuk penggunaan pribadi Anda sendiri.
+
+### Tindakan yang Dilarang Keras
+*   **Kompetisi Komersial**: Anda tidak diperbolehkan membuat, mendistribusikan, atau mengoperasikan produk komersial yang bersaing dengan Kino.
+*   **Distribusi Layanan**: Anda tidak diperbolehkan menawarkan perangkat lunak ini atau versi modifikasinya sebagai layanan (service) kepada pihak ketiga.
+
+### Perjanjian Lisensi Kontributor (CLA)
+Dengan mengirimkan Pull Request ke repositori ini, Anda secara eksplisit setuju bahwa kontribusi Anda akan dilisensikan di bawah PolyForm Shield License 1.0.0. Anda juga memberi hak tak dapat dicabut kepada pengelola (maintainers) untuk memasukkan, mendistribusikan, dan memodifikasi kode yang Anda kirimkan ke dalam produk resmi Kino.
+
+---
+
+## 2. Panduan Pelaporan Isu (Issue Reporting)
+
+Laporan isu yang detail dan dapat direproduksi sangat penting untuk menjaga stabilitas Kino. Saat membuka isu, harap gunakan templat yang disediakan dan pastikan informasi berikut disertakan:
+
+1.  **Detail Lingkungan**:
+    *   Versi macOS (misalnya, macOS 14.5)
+    *   Spesifikasi Perangkat Keras (misalnya, Apple M2, Memori Terpadu 16GB)
+    *   Versi Xcode (jika melakukan kompilasi dari sumber)
+2.  **Langkah Reproduksi**: Daftar tindakan langkah-demi-langkah yang deterministik yang diperlukan untuk mereproduksi anomali tersebut.
+3.  **Perilaku yang Diharapkan vs. Aktual**: Perbedaan yang jelas antara hasil yang diharapkan dan kegagalan yang diamati.
+4.  **Log Diagnostik**: Jika terjadi crash, berikan stack trace lengkap atau log crash Xcode. Gunakan blok kode markdown untuk kemudahan membaca.
+
+---
+
+## 3. Permintaan Fitur (Feature Requests)
+
+Kino menganut filosofi desain yang ketat, berfokus pada performa native macOS, dependensi minimal, dan arsitektur yang bersih serta edukatif.
+
+Sebelum meminta fitur atau mulai mengembangkan fitur baru, harap buka utas Diskusi (Discussion) atau Isu yang diberi label `enhancement`.
+
+Permintaan fitur akan dievaluasi berdasarkan:
+*   **Dampak Performa**: Apakah fitur ini membebani pipeline rendering AVFoundation?
+*   **Integrasi Native**: Bisakah ini dibangun menggunakan AppKit/SwiftUI tanpa bergantung pada pustaka pihak ketiga yang berat?
+*   **Penyelarasan Peta Jalan Inti**: Apakah ini sejalan dengan tujuan jangka pendek proyek?
+
+---
+
+## 4. Standar Pengembangan dan Arsitektur
+
+Jika fitur atau perbaikan bug Anda telah disetujui di sebuah Isu, Anda dapat memulai pengembangan. Arsitektur Kino sangat bergantung pada Pola Command (Command Pattern) dan pemisahan tanggung jawab yang ketat.
+
+### Aturan Arsitektural
+1.  **Modifikasi State melalui Command**: Jangan memodifikasi `WorkspaceState` atau `TimelineService` secara langsung dari lapisan UI. Semua mutasi state harus dienkapsulasi di dalam kelas yang mematuhi protokol `Command` dan dieksekusi via `CommandManager`. Hal ini menjamin kemampuan Undo/Redo yang deterministik.
+2.  **Konkurensi MainActor**: Variabel state UI (`@Published`) hanya boleh dimutasi di thread utama (main thread). Gunakan `@MainActor` dari Swift dan konkurensi terstruktur (`async/await`) secara disiplin.
+3.  **Komposisi AVFoundation**: Memodifikasi `PlaybackEngine` membutuhkan pemahaman mendalam tentang `AVMutableVideoCompositionLayerInstruction`. Jangan perkenalkan CIFilter berbasis blok (`AVAsynchronousCIImageFilteringRequest`) yang menimpa sistem pelapisan multi-track kecuali Anda mengimplementasikan kelas `AVVideoCompositing` kustom.
+4.  **Manajemen Dependensi**: Jangan perkenalkan dependensi Swift Package Manager (SPM) atau CocoaPods kecuali disetujui secara eksplisit oleh pengelola. Kino bertujuan untuk memiliki nol dependensi eksternal.
+
+### Gaya Penulisan Kode (Code Style)
+*   Ikuti Panduan Desain API Swift standar.
+*   Hindari forced unwrapping (`!`) kecuali benar-benar diperlukan dan terbukti aman secara matematis.
+*   Pastikan semua properti dan metode baru menyertakan docstring deskriptif menggunakan markdown standar Swift (`///`).
+
+---
+
+## 5. Proses Pengiriman Pull Request
+
+Untuk mengirimkan kode Anda, ikuti alur kerja standar ini:
+
+1.  **Fork dan Branch**: Lakukan Fork pada repositori dan buat nama branch yang deskriptif (misalnya, `fix/playback-flicker` atau `feature/blade-tool-snap`).
+2.  **Commit Atomik**: Jaga agar commit Anda logis dan atomik. Tulis pesan commit deskriptif yang menjelaskan *mengapa* perubahan dilakukan, bukan hanya *apa* yang diubah.
+3.  **Tanpa File Ekstra**: Pastikan PR Anda tidak berisi file khusus IDE (misalnya, `.DS_Store`, `xcuserdata`), binary debug, atau pemformatan ulang kode yang tidak terkait.
+4.  **Pengujian (Testing)**: Build dan jalankan aplikasi secara lokal. Uji kasus ekstrem (edge cases), khususnya pastikan bahwa mekanika penarikan (dragging) di timeline dan pipeline ekspor video tetap berfungsi utuh.
+5.  **Menyusun PR**: Kirimkan Pull Request ke branch `main`. Referensikan nomor Isu yang diselesaikan dalam deskripsi PR (misalnya, "Resolves #42").
+
+Tinjauan kode (code review) mungkin membutuhkan beberapa iterasi. Harap bersabar dan responsif terhadap umpan balik arsitektural.
+
+Terima kasih atas kontribusi Anda pada Kino.
