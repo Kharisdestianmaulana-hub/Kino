@@ -1,4 +1,5 @@
 import SwiftUI
+
 import AppKit
 
 public struct InspectorView: View {
@@ -153,6 +154,7 @@ struct ClipInspectorView: View {
     @State private var colorAdjustment: ColorAdjustment
     @State private var volume: Float
     @State private var textProperties: TextProperties?
+    @State private var keyframes: [String: [Keyframe]]
     @State private var isEditing = false
     @State private var editStartClip: Clip? = nil
     
@@ -164,6 +166,7 @@ struct ClipInspectorView: View {
         _colorAdjustment = State(initialValue: clip.colorAdjustment ?? ColorAdjustment())
         _volume = State(initialValue: clip.volume)
         _textProperties = State(initialValue: clip.textProperties)
+        _keyframes = State(initialValue: clip.keyframes)
     }
     
     var body: some View {
@@ -247,9 +250,9 @@ struct ClipInspectorView: View {
                         }
                     }
                     
-                    InspectorSliderField(title: "Scale", value: $transform.scale, range: 0.1...3.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
-                    InspectorSliderField(title: "Rotation", value: $transform.rotation, range: -180...180, suffix: "°", multiplier: 1, onEditingChanged: commitTransform)
-                    InspectorSliderField(title: "Opacity", value: $transform.opacity, range: 0.0...1.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
+                    InspectorSliderField(title: "Scale", value: $transform.scale, range: 0.1...3.0, suffix: "%", multiplier: 100, propertyName: "scale", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
+                    InspectorSliderField(title: "Rotation", value: $transform.rotation, range: -180...180, suffix: "°", multiplier: 1, propertyName: "rotation", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
+                    InspectorSliderField(title: "Opacity", value: $transform.opacity, range: 0.0...1.0, suffix: "%", multiplier: 100, propertyName: "opacity", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
                 }
             }
             
@@ -261,9 +264,9 @@ struct ClipInspectorView: View {
                     InspectorSectionHeader(title: "COLOR ADJUSTMENTS")
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        InspectorSliderField(title: "Brightness", value: $colorAdjustment.brightness, range: -1.0...1.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
-                        InspectorSliderField(title: "Contrast", value: $colorAdjustment.contrast, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
-                        InspectorSliderField(title: "Saturation", value: $colorAdjustment.saturation, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
+                        InspectorSliderField(title: "Brightness", value: $colorAdjustment.brightness, range: -1.0...1.0, suffix: "", multiplier: 1, decimals: 2, propertyName: "brightness", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
+                        InspectorSliderField(title: "Contrast", value: $colorAdjustment.contrast, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, propertyName: "contrast", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
+                        InspectorSliderField(title: "Saturation", value: $colorAdjustment.saturation, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, propertyName: "saturation", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
                     }
                 }
                 
@@ -277,7 +280,7 @@ struct ClipInspectorView: View {
                         InspectorSliderField(title: "Volume", value: Binding(
                             get: { Double(volume) },
                             set: { volume = Float($0) }
-                        ), range: 0.0...2.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
+                        ), range: 0.0...2.0, suffix: "%", multiplier: 100, propertyName: "volume", clip: clip, keyframes: $keyframes, playheadTime: workspace.playheadPosition, onNavigate: { workspace.playheadPosition = $0 }, onEditingChanged: commitTransform)
                     }
                 }
             }
@@ -287,7 +290,24 @@ struct ClipInspectorView: View {
                 transform = newClip.transform
                 colorAdjustment = newClip.colorAdjustment ?? ColorAdjustment()
                 volume = newClip.volume
+                keyframes = newClip.keyframes
                 textProperties = newClip.textProperties
+            }
+        }
+        .onChange(of: workspace.playheadPosition) { newTime in
+            if !isEditing {
+                let localTime = newTime - clip.timelineStart
+                transform.scale = clip.interpolatedValue(for: "scale", at: localTime, fallback: clip.transform.scale)
+                transform.positionX = clip.interpolatedValue(for: "positionX", at: localTime, fallback: clip.transform.positionX)
+                transform.positionY = clip.interpolatedValue(for: "positionY", at: localTime, fallback: clip.transform.positionY)
+                transform.rotation = clip.interpolatedValue(for: "rotation", at: localTime, fallback: clip.transform.rotation)
+                transform.opacity = clip.interpolatedValue(for: "opacity", at: localTime, fallback: clip.transform.opacity)
+                
+                colorAdjustment.brightness = clip.interpolatedValue(for: "brightness", at: localTime, fallback: clip.colorAdjustment?.brightness ?? 0.0)
+                colorAdjustment.contrast = clip.interpolatedValue(for: "contrast", at: localTime, fallback: clip.colorAdjustment?.contrast ?? 1.0)
+                colorAdjustment.saturation = clip.interpolatedValue(for: "saturation", at: localTime, fallback: clip.colorAdjustment?.saturation ?? 1.0)
+                
+                volume = Float(clip.interpolatedValue(for: "volume", at: localTime, fallback: Double(clip.volume)))
             }
         }
         .onChange(of: transform) { newTransform in
@@ -316,9 +336,28 @@ struct ClipInspectorView: View {
                 newClip.transform = transform
                 newClip.colorAdjustment = colorAdjustment
                 newClip.volume = newVolume
+                newClip.keyframes = keyframes
                 newClip.textProperties = textProperties
                 workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
             }
+        }
+        .onChange(of: keyframes) { newKeyframes in
+            var newClip = clip
+            newClip.transform = transform
+            newClip.colorAdjustment = colorAdjustment
+            newClip.volume = volume
+            newClip.keyframes = newKeyframes
+            newClip.textProperties = textProperties
+            
+            // Execute as command because keyframe clicks are usually discrete actions, not continuous dragging
+            let command = ModifyClipPropertiesCommand(
+                service: workspace.timelineService,
+                sequenceID: sequenceID,
+                trackID: trackID,
+                oldClip: clip,
+                newClip: newClip
+            )
+            workspace.executeClipPropertiesCommand(command)
         }
     }
     
@@ -332,7 +371,34 @@ struct ClipInspectorView: View {
         newClip.transform = transform
         newClip.colorAdjustment = colorAdjustment
         newClip.volume = volume
+        newClip.keyframes = keyframes
         newClip.textProperties = textProperties
+        
+        // Auto-keyframing logic: update existing keyframe or create new one if track is active
+        let localTime = workspace.playheadPosition - clip.timelineStart
+        var kfs = newClip.keyframes
+        
+        let checkAndUpdate = { (prop: String, val: Double) in
+            if var track = kfs[prop], !track.isEmpty {
+                if let idx = track.firstIndex(where: { abs($0.time - localTime) < 0.01 }) {
+                    track[idx].value = val
+                } else {
+                    track.append(Keyframe(time: localTime, value: val))
+                }
+                kfs[prop] = track
+            }
+        }
+        
+        checkAndUpdate("scale", transform.scale)
+        checkAndUpdate("rotation", transform.rotation)
+        checkAndUpdate("opacity", transform.opacity)
+        checkAndUpdate("brightness", colorAdjustment.brightness)
+        checkAndUpdate("contrast", colorAdjustment.contrast)
+        checkAndUpdate("saturation", colorAdjustment.saturation)
+        checkAndUpdate("volume", Double(volume))
+        
+        newClip.keyframes = kfs
+        self.keyframes = kfs // Update local state so UI (diamond button) updates live
         
         if editing {
             workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
@@ -415,6 +481,14 @@ struct InspectorSliderField: View {
     let multiplier: Double
     var decimals: Int = 0
     var customDragStep: Double? = nil
+    
+    // Keyframe Support
+    var propertyName: String? = nil
+    var clip: Clip? = nil
+    var keyframes: Binding<[String: [Keyframe]]>? = nil
+    var playheadTime: Double? = nil
+    var onNavigate: ((Double) -> Void)? = nil
+    
     var onEditingChanged: (Bool) -> Void
     
     var body: some View {
@@ -422,6 +496,11 @@ struct InspectorSliderField: View {
             HStack {
                 Text(title)
                     .font(.subheadline)
+                
+                if let prop = propertyName, let c = clip, let kfs = keyframes, let pTime = playheadTime, let nav = onNavigate {
+                    KeyframeControls(propertyName: prop, clip: c, keyframes: kfs, playheadTime: pTime, currentValue: value, onNavigate: nav)
+                }
+                
                 Spacer()
                 
                 InspectorNumberBox(
@@ -915,6 +994,87 @@ struct FullWidthColorWell: NSViewRepresentable {
         
         @objc func colorChanged(_ sender: NSColorWell) {
             parent.color = Color(sender.color)
+        }
+    }
+}
+
+
+struct KeyframeControls: View {
+    let propertyName: String
+    let clip: Clip
+    @Binding var keyframes: [String: [Keyframe]]
+    let playheadTime: Double
+    let currentValue: Double
+    let onNavigate: (Double) -> Void
+    
+    // Check if a keyframe exists exactly at the current local time (with slight tolerance)
+    private var hasKeyframeAtCurrentTime: Bool {
+        guard let track = keyframes[propertyName] else { return false }
+        let localTime = playheadTime - clip.timelineStart
+        return track.contains { abs($0.time - localTime) < 0.01 }
+    }
+    
+    var body: some View {
+        HStack(spacing: 2) {
+            Button(action: goToPreviousKeyframe) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            
+            Button(action: toggleKeyframe) {
+                Image(systemName: hasKeyframeAtCurrentTime ? "diamond.fill" : "diamond")
+                    .font(.system(size: 12))
+                    .foregroundColor(hasKeyframeAtCurrentTime ? .blue : .secondary)
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            
+            Button(action: goToNextKeyframe) {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .padding(4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
+    private func toggleKeyframe() {
+        var track = keyframes[propertyName] ?? []
+        let localTime = playheadTime - clip.timelineStart
+        
+        if let index = track.firstIndex(where: { abs($0.time - localTime) < 0.01 }) {
+            // Remove if exists
+            track.remove(at: index)
+        } else {
+            // Add new
+            track.append(Keyframe(time: localTime, value: currentValue))
+        }
+        
+        keyframes[propertyName] = track
+    }
+    
+    private func goToPreviousKeyframe() {
+        guard let track = keyframes[propertyName] else { return }
+        let localTime = playheadTime - clip.timelineStart
+        let sorted = track.sorted { $0.time < $1.time }
+        if let prev = sorted.last(where: { $0.time < localTime - 0.01 }) {
+            onNavigate(clip.timelineStart + prev.time)
+        }
+    }
+    
+    private func goToNextKeyframe() {
+        guard let track = keyframes[propertyName] else { return }
+        let localTime = playheadTime - clip.timelineStart
+        let sorted = track.sorted { $0.time < $1.time }
+        if let next = sorted.first(where: { $0.time > localTime + 0.01 }) {
+            onNavigate(clip.timelineStart + next.time)
         }
     }
 }

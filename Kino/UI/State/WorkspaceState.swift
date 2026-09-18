@@ -35,7 +35,11 @@ public class WorkspaceState: ObservableObject {
     @Published public var project: Project?
     @Published public var selectedSequenceID: UUID?
     @Published public var selection: SelectionState = .none
-    @Published public var playheadPosition: Double = 0.0
+    @Published public var playheadPosition: Double = 0.0 {
+        didSet {
+            updatePreviewPresentationState()
+        }
+    }
     @Published public var isPlaying: Bool = false
     @Published public var activeTool: TimelineTool = .selection
     @Published public var currentCompositionItem: AVPlayerItem? = nil
@@ -387,7 +391,14 @@ public class WorkspaceState: ObservableObject {
     
     public func updatePreviewPresentationState() {
         if let context = activeVideoClipContext(at: playheadPosition) {
-            previewPresentationState = PreviewPresentationState(transform: context.clip.transform)
+            let localTime = playheadPosition - context.clip.timelineStart
+            var t = context.clip.transform
+            t.scale = context.clip.interpolatedValue(for: "scale", at: localTime, fallback: t.scale)
+            t.positionX = context.clip.interpolatedValue(for: "positionX", at: localTime, fallback: t.positionX)
+            t.positionY = context.clip.interpolatedValue(for: "positionY", at: localTime, fallback: t.positionY)
+            t.rotation = context.clip.interpolatedValue(for: "rotation", at: localTime, fallback: t.rotation)
+            t.opacity = context.clip.interpolatedValue(for: "opacity", at: localTime, fallback: t.opacity)
+            previewPresentationState = PreviewPresentationState(transform: t)
         } else {
             previewPresentationState = .identity
         }

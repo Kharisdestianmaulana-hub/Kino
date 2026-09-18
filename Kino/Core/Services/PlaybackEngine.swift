@@ -360,7 +360,26 @@ public class PlaybackEngine {
             let ap = AVMutableAudioMixInputParameters(track: compAudioTrack)
             for clip in audioTrack.clips {
                 let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
-                ap.setVolume(clip.volume, at: targetTime)
+                
+                if let volKfs = clip.keyframes["volume"], !volKfs.isEmpty {
+                    let sorted = volKfs.sorted(by: { $0.time < $1.time })
+                    
+                    let startVol = Float(clip.interpolatedValue(for: "volume", at: 0.0, fallback: Double(clip.volume)))
+                    ap.setVolume(startVol, at: targetTime)
+                    
+                    for i in 0..<(sorted.count - 1) {
+                        let kf1 = sorted[i]
+                        let kf2 = sorted[i+1]
+                        
+                        let t1 = CMTime(seconds: clip.timelineStart + kf1.time, preferredTimescale: 600)
+                        let t2 = CMTime(seconds: clip.timelineStart + kf2.time, preferredTimescale: 600)
+                        let timeRange = CMTimeRange(start: t1, end: t2)
+                        
+                        ap.setVolumeRamp(fromStartVolume: Float(kf1.value), toEndVolume: Float(kf2.value), timeRange: timeRange)
+                    }
+                } else {
+                    ap.setVolume(clip.volume, at: targetTime)
+                }
             }
             audioMix.inputParameters = [ap]
             playerItem.audioMix = audioMix
@@ -512,15 +531,22 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                         }
                     }
                     
+                    let localTime = currentTime - clip.timelineStart
+                    
                     if var img = sourceImage {
                         
-                        // Apply Color Adjustment Filter
-                        if let colorAdj = clip.colorAdjustment {
+                        // Fetch interpolated color adjustments
+                        let brightness = clip.interpolatedValue(for: "brightness", at: localTime, fallback: clip.colorAdjustment?.brightness ?? 0.0)
+                        let contrast = clip.interpolatedValue(for: "contrast", at: localTime, fallback: clip.colorAdjustment?.contrast ?? 1.0)
+                        let saturation = clip.interpolatedValue(for: "saturation", at: localTime, fallback: clip.colorAdjustment?.saturation ?? 1.0)
+                        
+                        // Apply Color Adjustment Filter if needed
+                        if brightness != 0.0 || contrast != 1.0 || saturation != 1.0 {
                             let filter = CIFilter(name: "CIColorControls")
                             filter?.setValue(img, forKey: kCIInputImageKey)
-                            filter?.setValue(colorAdj.brightness, forKey: kCIInputBrightnessKey)
-                            filter?.setValue(colorAdj.contrast, forKey: kCIInputContrastKey)
-                            filter?.setValue(colorAdj.saturation, forKey: kCIInputSaturationKey)
+                            filter?.setValue(brightness, forKey: kCIInputBrightnessKey)
+                            filter?.setValue(contrast, forKey: kCIInputContrastKey)
+                            filter?.setValue(saturation, forKey: kCIInputSaturationKey)
                             if let outputImg = filter?.outputImage {
                                 img = outputImg
                             }
@@ -545,11 +571,11 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                         transform = transform.concatenating(CGAffineTransform(scaleX: baseScale, y: baseScale))
                         transform = transform.concatenating(CGAffineTransform(translationX: offsetX, y: offsetY))
                         
-                        // Apply user transforms
-                        let userScale = CGFloat(clip.transform.scale)
-                        let userPosX = CGFloat(clip.transform.positionX)
-                        let userPosY = -CGFloat(clip.transform.positionY)
-                        let userRot = CGFloat(clip.transform.rotation) * .pi / 180.0
+                        // Fetch interpolated user transforms
+                        let userScale = CGFloat(clip.interpolatedValue(for: "scale", at: localTime, fallback: clip.transform.scale))
+                        let userPosX = CGFloat(clip.interpolatedValue(for: "positionX", at: localTime, fallback: clip.transform.positionX))
+                        let userPosY = -CGFloat(clip.interpolatedValue(for: "positionY", at: localTime, fallback: clip.transform.positionY))
+                        let userRot = CGFloat(clip.interpolatedValue(for: "rotation", at: localTime, fallback: clip.transform.rotation)) * .pi / 180.0
                         
                         let cx = renderSize.width / 2.0
                         let cy = renderSize.height / 2.0
@@ -562,7 +588,7 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                         
                         img = img.transformed(by: transform)
                         
-                        let opacity = CGFloat(clip.transform.opacity)
+                        let opacity = CGFloat(clip.interpolatedValue(for: "opacity", at: localTime, fallback: clip.transform.opacity))
                         if opacity < 1.0 {
                             let filter = CIFilter(name: "CIColorMatrix")!
                             filter.setValue(img, forKey: kCIInputImageKey)

@@ -119,6 +119,7 @@ public struct TimelineView: View {
                             Image(systemName: "arrowtriangle.down.fill")
                                 .foregroundColor(.red)
                                 .font(.system(size: 14))
+                                .frame(width: 14, height: 14)
                                 .offset(y: 4)
                             
                             Rectangle()
@@ -126,6 +127,7 @@ public struct TimelineView: View {
                                 .frame(width: 1.5)
                                 .frame(maxHeight: .infinity)
                         }
+                        .frame(width: 14) // Pastikan width utuh 14 agar offset -7 benar-benar di tengah
                         .offset(x: trackHeaderWidth + CGFloat(workspace.playheadPosition) * timeScale - 7)
                         .allowsHitTesting(false) // Jangan menghalangi interaksi ke Clip atau Ruler di bawahnya
                     }

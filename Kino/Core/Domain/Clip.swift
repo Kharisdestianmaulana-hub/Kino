@@ -67,10 +67,13 @@ public struct Clip: Codable, Identifiable, Equatable {
     /// Properties for audio manipulation (1.0 = 100%, 0.0 = mute)
     public var volume: Float
     
+    /// Dictionary of keyframes, mapped by property name (e.g. "scale", "opacity")
+    public var keyframes: [String: [Keyframe]]
+    
     /// ID of a linked clip (e.g. linked audio track)
     public var linkedClipID: UUID?
 
-    public init(id: UUID = UUID(), mediaAssetID: UUID? = nil, textProperties: TextProperties? = nil, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), colorAdjustment: ColorAdjustment? = nil, volume: Float = 1.0, linkedClipID: UUID? = nil) {
+    public init(id: UUID = UUID(), mediaAssetID: UUID? = nil, textProperties: TextProperties? = nil, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), colorAdjustment: ColorAdjustment? = nil, volume: Float = 1.0, keyframes: [String: [Keyframe]] = [:], linkedClipID: UUID? = nil) {
         self.id = id
         self.mediaAssetID = mediaAssetID
         self.textProperties = textProperties
@@ -80,6 +83,7 @@ public struct Clip: Codable, Identifiable, Equatable {
         self.transform = transform
         self.colorAdjustment = colorAdjustment
         self.volume = volume
+        self.keyframes = keyframes
         self.linkedClipID = linkedClipID
     }
     
@@ -96,6 +100,77 @@ public struct Clip: Codable, Identifiable, Equatable {
         self.transform = try container.decodeIfPresent(ClipTransform.self, forKey: .transform) ?? ClipTransform()
         self.colorAdjustment = try container.decodeIfPresent(ColorAdjustment.self, forKey: .colorAdjustment)
         self.volume = try container.decodeIfPresent(Float.self, forKey: .volume) ?? 1.0
+        self.keyframes = try container.decodeIfPresent([String: [Keyframe]].self, forKey: .keyframes) ?? [:]
         self.linkedClipID = try container.decodeIfPresent(UUID.self, forKey: .linkedClipID)
+    }
+    
+    /// Helper to get an interpolated value at a specific local time.
+    /// localTime is the time offset from the start of the clip (0.0 means the very beginning of the clip block).
+    public func interpolatedValue(for property: String, at localTime: Double, fallback: Double) -> Double {
+        guard let trackKeyframes = keyframes[property], !trackKeyframes.isEmpty else {
+            return fallback
+        }
+        
+        let sorted = trackKeyframes.sorted(by: { $0.time < $1.time })
+        
+        if localTime <= sorted.first!.time {
+            return sorted.first!.value
+        }
+        
+        if localTime >= sorted.last!.time {
+            return sorted.last!.value
+        }
+        
+        for i in 0..<(sorted.count - 1) {
+            let kf1 = sorted[i]
+            let kf2 = sorted[i+1]
+            
+            if localTime >= kf1.time && localTime < kf2.time {
+                var progress = (localTime - kf1.time) / (kf2.time - kf1.time)
+                
+                // Apply easing
+                switch kf1.easing {
+                case .linear:
+                    break // progress remains the same
+                case .easeIn:
+                    progress = progress * progress
+                case .easeOut:
+                    progress = progress * (2.0 - progress)
+                case .easeInOut:
+                    if progress < 0.5 {
+                        progress = 2.0 * progress * progress
+                    } else {
+                        progress = -1.0 + (4.0 - 2.0 * progress) * progress
+                    }
+                }
+                
+                return kf1.value + (kf2.value - kf1.value) * progress
+            }
+        }
+        
+        return fallback
+    }
+}
+import Foundation
+
+public enum KeyframeEasing: String, Codable, Equatable {
+    case linear
+    case easeIn
+    case easeOut
+    case easeInOut
+}
+
+public struct Keyframe: Codable, Identifiable, Equatable {
+    public let id: UUID
+    /// Waktu relatif terhadap awal klip (0.0 = awal klip, berapapun timelineStart-nya)
+    public var time: Double
+    public var value: Double
+    public var easing: KeyframeEasing
+    
+    public init(id: UUID = UUID(), time: Double, value: Double, easing: KeyframeEasing = .linear) {
+        self.id = id
+        self.time = time
+        self.value = value
+        self.easing = easing
     }
 }

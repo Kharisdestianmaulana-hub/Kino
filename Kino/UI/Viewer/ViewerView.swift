@@ -165,12 +165,15 @@ public struct ViewerView: View {
             updatePlayer(forceTimeline: true)
         }
         // Menjalankan garis merah secara otomatis saat diputar, KECUALI sedang preview media
-        .onReceive(Timer.publish(every: 1.0/30.0, on: .main, in: .common).autoconnect()) { _ in
+        .onReceive(Timer.publish(every: 1.0/60.0, on: .main, in: .common).autoconnect()) { _ in
             if workspace.isPlaying {
                 if case .mediaAsset = workspace.selection {
                     // Do nothing to the timeline playhead
                 } else {
-                    workspace.playheadPosition += 1.0/30.0
+                    let seconds = player.currentTime().seconds
+                    if !seconds.isNaN && !seconds.isInfinite {
+                        workspace.playheadPosition = seconds
+                    }
                 }
             }
         }

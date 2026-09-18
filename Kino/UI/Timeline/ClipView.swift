@@ -183,6 +183,27 @@ public struct ClipView: View {
                 Spacer(minLength: 0)
             }
             .padding(4)
+            
+            // Render Keyframe Markers
+            let allKeyframes = clip.keyframes.flatMap { $0.value }
+            if !allKeyframes.isEmpty {
+                let uniqueTimes = Array(Set(allKeyframes.map { $0.time }))
+                GeometryReader { geo in
+                    ForEach(uniqueTimes, id: \.self) { time in
+                        let xPos = CGFloat(time) * timeScale
+                        let isSelectedKeyframe = abs(workspace.playheadPosition - (clip.timelineStart + time)) < 0.02
+                        Image(systemName: "diamond.fill")
+                            .font(.system(size: 10))
+                            .foregroundColor(isSelectedKeyframe ? .cyan : .white)
+                            .shadow(color: .black.opacity(0.8), radius: 2)
+                            // Menggunakan .position menjamin titik tengah diamond persis di xPos dan persis di tengah tinggi klip
+                            .position(x: xPos, y: geo.size.height / 2)
+                            .onTapGesture {
+                                workspace.playheadPosition = clip.timelineStart + time
+                            }
+                    }
+                }
+            }
         }
         .frame(width: max(CGFloat(currentDuration) * timeScale, 5))
         .overlay(
