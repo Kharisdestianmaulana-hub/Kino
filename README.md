@@ -1,7 +1,7 @@
 <div align="center">
   <img src="Logo.png" alt="Kino Logo" width="180" height="180"/>
   <h1>Kino</h1>
-  <strong>A native macOS video editor. Zero compromises.</strong>
+  <strong>A native macOS video editor built for learning. Filesystem-first.</strong>
   <br/><br/>
 
   ![Swift](https://img.shields.io/badge/Swift-6.0-F05138?style=flat&logo=swift&logoColor=white)
@@ -10,7 +10,7 @@
   ![Architecture](https://img.shields.io/badge/Architecture-SwiftUI%20%2B%20AVFoundation-purple?style=flat)
 
   <br/>
-  <sub>Built from the ground up for Apple Silicon. No Electron. No compromises.</sub>
+  <sub>Built from the ground up for Apple Silicon. No cross-platform wrappers.</sub>
 </div>
 
 <br/>
@@ -35,6 +35,7 @@
   - [Architecture](#architecture)
   - [Getting Started](#getting-started)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
+  - [Project Status & Limitations](#project-status--limitations)
   - [Roadmap](#roadmap)
   - [License](#license)
 - [Bahasa Indonesia](#bahasa-indonesia)
@@ -44,6 +45,7 @@
   - [Arsitektur](#arsitektur)
   - [Cara Memulai](#cara-memulai)
   - [Pintasan Keyboard](#pintasan-keyboard)
+  - [Status Proyek & Keterbatasan Saat Ini](#status-proyek--keterbatasan-saat-ini)
   - [Peta Jalan](#peta-jalan-roadmap)
   - [Lisensi](#lisensi)
 
@@ -55,23 +57,23 @@
 
 ## What is Kino
 
-Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It uses SwiftUI for the interface, AVFoundation for media processing, and CoreImage for real-time compositing.
+Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It uses SwiftUI for the interface, AVFoundation for media processing, and CoreImage for compositing.
 
-Most "native" editors are actually cross-platform compromises wrapped in a macOS skin. Kino is different. Every line of code was written specifically for macOS and Apple Silicon, taking full advantage of hardware-accelerated decoding, Metal-backed rendering, and the tight integration that only a true native app can provide.
+While professional NLEs like Final Cut Pro set the standard for native macOS performance, Kino differentiates itself through a filesystem-first approach, modular architecture, and an intentionally educational codebase. Every line of code is written specifically for macOS, taking advantage of hardware-accelerated decoding and Metal-backed rendering.
 
-Furthermore, Kino introduces a **Filesystem-First** and **Modular Feature Architecture**. It doesn't trap your media in hidden libraries, and it doesn't force bloatware. The lightweight "Core" provides a complete foundational editing workflow, while 14 advanced optional modules (like Professional Color, Audio Pro, and Advanced Subtitles) can be plugged in exactly when you need them.
+Furthermore, Kino introduces a **Filesystem-First** and **Modular Feature Architecture**. It doesn't trap your media in hidden libraries, and it doesn't force unnecessary features. The lightweight "Core" provides a foundational editing workflow, while 14 advanced optional modules (like Professional Color, Audio Pro, and Advanced Subtitles) can be plugged in when you need them.
 
-The result is an editor that launches instantly, renders without stutter, and scales with your needs.
+The result is an editor designed for quick launch times, smooth rendering, and scalability.
 
 ## Why Kino
 
 There are plenty of video editors out there. Here is why Kino exists:
 
-- **Truly native.** Not a web app in disguise. Not an Electron wrapper. Not a Qt port. Kino is 100% SwiftUI and AppKit, compiled directly for macOS. It behaves like a Mac app should: instant window snapping, native dark mode, proper menu bar integration, and full Retina support without extra configuration.
-- **Lightweight & Modular.** The entire application binary is incredibly small. There are no bundled runtimes or background services consuming your RAM. Kino launches in under a second. With our modular architecture, you only install the advanced tools you actually use, ensuring the core editor never becomes slow or bloated.
-- **Filesystem-First & Non-Destructive.** Source media belongs to you. Kino does not create hidden duplicate media libraries. Your original video, audio, and image files remain untouched in your chosen folders, and every timeline operation is strictly non-destructive.
-- **Predictable.** Every edit operation goes through the Command Pattern. This means the application state is always deterministic. If something goes wrong, the undo stack knows exactly how to reverse it.
-- **Educational.** The codebase is deliberately kept clean and approachable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as a real-world reference that goes far beyond tutorial-level complexity.
+- **Native macOS Experience.** Built entirely with SwiftUI and AppKit, compiled directly for macOS. It integrates naturally with the OS, supporting native window management, dark mode, and Retina displays.
+- **Lightweight & Modular.** The application binary is kept small. With our modular architecture, you only install the advanced tools you actually use, helping the core editor remain fast and focused.
+- **Filesystem-First & Non-Destructive.** Source media belongs to you. Kino does not create hidden duplicate media libraries. Your original video, audio, and image files remain untouched in your chosen folders, and every timeline operation is strictly non-destructive. Under the hood, the `MediaService` uses Security-Scoped Bookmarks to maintain persistent references to your files across app launches without copying the raw data.
+- **Predictable.** Every edit operation goes through the Command Pattern. This means the application state is deterministic. If something goes wrong, the undo stack knows exactly how to reverse it.
+- **Educational.** The codebase is deliberately kept clean and approachable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as an open, real-world reference for building complex native applications.
 
 ## Features
 
@@ -140,6 +142,13 @@ No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
 | `Cmd + E` | Export Video |
 | `Delete` | Delete Selected Clip |
 
+## Project Status & Limitations
+
+Kino is currently moving towards its v1.0 release. It is being developed by a small team as an open, educational project, rather than a massive enterprise application.
+
+- **Media Support**: While AVFoundation supports many formats, testing has been primarily limited to standard H.264/HEVC (`.mp4`, `.mov`) files. Professional formats (like ProRes or RAW) have not been extensively benchmarked.
+- **Stability**: As an active project, you may encounter bugs. It is not yet recommended for mission-critical production work.
+
 ## Roadmap
 
 Kino uses a **Modular Feature Strategy**. The Core provides a complete basic editing workflow, while advanced features are implemented as optional modules.
@@ -148,21 +157,21 @@ Kino uses a **Modular Feature Strategy**. The Core provides a complete basic edi
 
 | Status | Feature |
 |---|---|
-| Done | Multi-track timeline with drag-and-drop |
-| Done | Linked audio/video clips |
-| Done | Real-time waveform visualization |
-| Done | Hardware-accelerated playback engine |
-| Done | Video export pipeline |
-| Done | Full undo/redo history |
-| Done | Razor / Blade tool (Split clips) |
-| Done | Clip edge trimming (Drag to resize) |
-| Done | Text and title overlays |
-| Planned | Module 1: Effects |
-| Planned | Module 2: Transitions |
-| Planned | Module 3: Advanced Subtitles |
-| Planned | Module 4: Professional Color |
-| Planned | Module 5: Audio Pro |
-| Planned | Module 6: Advanced Export |
+| ✅ Stable | Multi-track timeline with drag-and-drop |
+| ✅ Stable | Linked audio/video clips |
+| ✅ Stable | Real-time waveform visualization |
+| ✅ Stable | Hardware-accelerated playback engine |
+| ✅ Stable | Video export pipeline |
+| ✅ Stable | Full undo/redo history |
+| ✅ Stable | Razor / Blade tool (Split clips) |
+| ✅ Stable | Clip edge trimming (Drag to resize) |
+| ✅ Stable | Text and title overlays |
+| 📋 Planned | Module 1: Effects |
+| 📋 Planned | Module 2: Transitions |
+| 📋 Planned | Module 3: Advanced Subtitles |
+| 📋 Planned | Module 4: Professional Color |
+| 📋 Planned | Module 5: Audio Pro |
+| 📋 Planned | Module 6: Advanced Export |
 
 ### Future Modules
 Future releases will introduce: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, and Integrations.
@@ -173,6 +182,10 @@ This project is licensed under the **PolyForm Shield License 1.0.0**.
 
 You are free to read, study, and learn from this code. You may not use it to build a competing product or commercial service. See `LICENSE` for the full terms.
 
+**Mini-FAQ:**
+- **Can I use this code for my own personal/commercial project?**
+  Yes, as long as your project is NOT a competing video editing product or service.
+
 Interested in contributing? Read `CONTRIBUTING.md` for guidelines on bug reports, feature requests, and pull requests.
 
 ---
@@ -182,23 +195,23 @@ Interested in contributing? Read `CONTRIBUTING.md` for guidelines on bug reports
 
 ## Apa itu Kino
 
-Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya dalam bahasa Swift untuk macOS. Kino menggunakan SwiftUI untuk antarmuka, AVFoundation untuk pemrosesan media, dan CoreImage untuk komposisi visual secara real-time.
+Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya dalam bahasa Swift untuk macOS. Kino menggunakan SwiftUI untuk antarmuka, AVFoundation untuk pemrosesan media, dan CoreImage untuk komposisi visual.
 
-Kebanyakan editor yang mengklaim "native" sebenarnya adalah kompromi lintas platform yang dibungkus tampilan macOS. Kino berbeda. Setiap baris kodenya ditulis secara spesifik untuk macOS dan Apple Silicon, memanfaatkan sepenuhnya akselerasi perangkat keras untuk decoding, rendering berbasis Metal, dan integrasi mendalam yang hanya bisa dilakukan oleh aplikasi native sejati.
+Meski editor profesional seperti Final Cut Pro telah menetapkan standar performa native di macOS, Kino membedakan dirinya melalui pendekatan filesystem-first, arsitektur modular, dan basis kode yang sengaja dibuat edukatif. Setiap baris kode ditulis spesifik untuk macOS, memanfaatkan akselerasi perangkat keras untuk decoding dan rendering berbasis Metal.
 
-Lebih dari itu, Kino memperkenalkan arsitektur **Filesystem-First** dan **Fitur Modular**. Aplikasi ini tidak mengurung aset media Anda di dalam pustaka tersembunyi, dan tidak memaksa Anda mengunduh fitur yang tidak terpakai. Bagian "Core" (Inti) yang super ringan menyediakan alur kerja pengeditan dasar yang lengkap, sementara 14 modul lanjutan opsional (seperti Warna Profesional, Audio Pro, dan Subtitle Lanjutan) dapat dipasang hanya ketika Anda membutuhkannya.
+Lebih dari itu, Kino memperkenalkan arsitektur **Filesystem-First** dan **Fitur Modular**. Aplikasi ini tidak mengurung aset media Anda di dalam pustaka tersembunyi, dan tidak menyertakan fitur yang belum tentu terpakai secara bawaan. Bagian "Core" (Inti) menyediakan alur kerja pengeditan dasar, sementara 14 modul lanjutan opsional (seperti Warna Profesional, Audio Pro, dan Subtitle Lanjutan) dapat dipasang hanya ketika Anda membutuhkannya.
 
-Hasilnya adalah editor yang terbuka dalam sekejap, merender tanpa patah-patah, dan dapat dikembangkan sesuai kebutuhan Anda.
+Hasilnya adalah editor yang dirancang untuk dapat terbuka dengan cepat, merender dengan mulus, dan berskala sesuai kebutuhan Anda.
 
 ## Mengapa Kino
 
 Ada banyak editor video di luar sana. Berikut alasan Kino dibuat:
 
-- **Benar-benar native.** Bukan aplikasi web yang menyamar. Bukan wrapper Electron. Bukan port dari Qt. Kino adalah 100% SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Perilakunya seperti aplikasi Mac seharusnya: window snapping instan, dark mode bawaan, integrasi menu bar yang benar, dan dukungan Retina penuh tanpa konfigurasi tambahan.
-- **Ringan & Modular.** Seluruh binary aplikasi berukuran sangat kecil. Tidak ada runtime yang dibundel atau layanan latar belakang yang menghabiskan RAM Anda. Kino terbuka dalam waktu kurang dari satu detik. Melalui arsitektur modular, Anda hanya memasang fitur lanjutan yang benar-benar Anda pakai, memastikan editor utama tidak pernah menjadi lambat atau membengkak.
-- **Filesystem-First & Non-Destruktif.** Aset media adalah milik Anda. Kino tidak pernah membuat salinan duplikat file media secara diam-diam. Video, audio, dan gambar asli tetap utuh di folder asli Anda, dan setiap proses editing pada timeline dijamin non-destruktif (tidak merusak file asli).
+- **Pengalaman Native macOS.** Dibangun sepenuhnya dengan SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Aplikasi ini terintegrasi secara natural dengan OS, mendukung manajemen jendela bawaan, mode gelap, dan layar Retina.
+- **Ringan & Modular.** Ukuran binary aplikasi dijaga agar tetap kecil. Melalui arsitektur modular, Anda hanya memasang fitur lanjutan yang benar-benar Anda pakai, membantu editor utama tetap cepat dan fokus pada hal esensial.
+- **Filesystem-First & Non-Destruktif.** Aset media adalah milik Anda. Kino tidak pernah membuat salinan duplikat file media secara diam-diam. Video, audio, dan gambar asli tetap utuh di folder asli Anda, dan setiap proses editing pada timeline dijamin non-destruktif (tidak merusak file asli). Di balik layar, `MediaService` menggunakan *Security-Scoped Bookmarks* untuk menyimpan referensi persisten ke file Anda lintas sesi tanpa harus menyalin data mentahnya.
 - **Dapat diprediksi.** Setiap operasi edit melewati Command Pattern. Artinya, state aplikasi selalu deterministik. Jika ada yang salah, tumpukan undo tahu persis cara membalikkannya.
-- **Edukatif.** Basis kode sengaja dijaga agar tetap mudah dibaca. Jika Anda sedang belajar SwiftUI, AVFoundation, atau arsitektur aplikasi macOS, proyek ini berfungsi sebagai referensi dunia nyata yang jauh melampaui kompleksitas level tutorial.
+- **Edukatif.** Basis kode sengaja dijaga agar tetap mudah dibaca. Jika Anda sedang belajar SwiftUI, AVFoundation, atau arsitektur aplikasi macOS, proyek ini berfungsi sebagai referensi terbuka di dunia nyata untuk membangun aplikasi native yang kompleks.
 
 ## Fitur
 
@@ -267,6 +280,13 @@ Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
 | `Cmd + E` | Ekspor Video |
 | `Delete` | Hapus Klip yang Dipilih |
 
+## Status Proyek & Keterbatasan Saat Ini
+
+Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan dalam skala kecil sebagai wadah edukasi terbuka, bukan perangkat lunak perusahaan skala besar.
+
+- **Dukungan Media**: Meski AVFoundation mendukung banyak format, pengujian sejauh ini masih terbatas pada file standar H.264/HEVC (`.mp4`, `.mov`). Format profesional (seperti ProRes atau RAW) belum melalui uji performa (benchmark) secara luas.
+- **Stabilitas**: Karena masih dalam tahap pengembangan aktif, Anda mungkin akan menemui bug. Belum direkomendasikan untuk pekerjaan produksi yang sangat kritis.
+
 ## Peta Jalan (Roadmap)
 
 Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur kerja pengeditan dasar yang lengkap, sementara fitur-fitur lanjutan diimplementasikan sebagai modul opsional.
@@ -275,21 +295,21 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 
 | Status | Fitur |
 |---|---|
-| Selesai | Timeline multi-track dengan drag-and-drop |
-| Selesai | Klip audio/video yang tertaut |
-| Selesai | Visualisasi waveform real-time |
-| Selesai | Mesin playback terakselerasi perangkat keras |
-| Selesai | Pipeline ekspor video |
-| Selesai | Riwayat undo/redo penuh |
-| Selesai | Alat pemotong / Razor tool (Split klip) |
-| Selesai | Pemangkasan ujung klip (Clip trimming) |
-| Selesai | Overlay teks dan judul |
-| Direncanakan | Modul 1: Efek (Effects) |
-| Direncanakan | Modul 2: Transisi (Transitions) |
-| Direncanakan | Modul 3: Subtitle Lanjutan |
-| Direncanakan | Modul 4: Warna Profesional |
-| Direncanakan | Modul 5: Audio Pro |
-| Direncanakan | Modul 6: Ekspor Lanjutan |
+| ✅ Stable | Timeline multi-track dengan drag-and-drop |
+| ✅ Stable | Klip audio/video yang tertaut |
+| ✅ Stable | Visualisasi waveform real-time |
+| ✅ Stable | Mesin playback terakselerasi perangkat keras |
+| ✅ Stable | Pipeline ekspor video |
+| ✅ Stable | Riwayat undo/redo penuh |
+| ✅ Stable | Alat pemotong / Razor tool (Split klip) |
+| ✅ Stable | Pemangkasan ujung klip (Clip trimming) |
+| ✅ Stable | Overlay teks dan judul |
+| 📋 Planned | Modul 1: Efek (Effects) |
+| 📋 Planned | Modul 2: Transisi (Transitions) |
+| 📋 Planned | Modul 3: Subtitle Lanjutan |
+| 📋 Planned | Modul 4: Warna Profesional |
+| 📋 Planned | Modul 5: Audio Pro |
+| 📋 Planned | Modul 6: Ekspor Lanjutan |
 
 ### Modul Masa Depan
 Rilis di masa depan akan memperkenalkan: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, dan Integrasi.
@@ -299,5 +319,9 @@ Rilis di masa depan akan memperkenalkan: Motion Graphics, Pro Media / Codecs, Ma
 Proyek ini dilisensikan di bawah **PolyForm Shield License 1.0.0**.
 
 Anda bebas membaca, mempelajari, dan mengambil ilmu dari kode ini. Anda tidak diperbolehkan menggunakannya untuk membangun produk pesaing atau layanan komersial. Lihat `LICENSE` untuk ketentuan lengkapnya.
+
+**Mini-FAQ:**
+- **Bolehkah saya pakai kode ini untuk project pribadi/komersial saya sendiri?**
+  Boleh, selama proyek Anda BUKAN produk atau layanan aplikasi penyunting video pesaing.
 
 Tertarik berkontribusi? Baca `CONTRIBUTING.md` untuk panduan mengenai laporan bug, permintaan fitur, dan pull request.
