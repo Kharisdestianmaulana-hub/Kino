@@ -29,6 +29,7 @@
   - [Getting Started](#getting-started)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
   - [Roadmap](#roadmap)
+  - [Contributors](#contributors)
   - [License](#license)
 - [Bahasa Indonesia](#bahasa-indonesia)
   - [Apa itu Kino](#apa-itu-kino)
@@ -39,6 +40,7 @@
   - [Cara Memulai](#cara-memulai)
   - [Pintasan Keyboard](#pintasan-keyboard)
   - [Peta Jalan](#peta-jalan-roadmap)
+  - [Kontributor](#kontributor)
   - [Lisensi](#lisensi)
 
 </details>
@@ -175,6 +177,12 @@ Kino uses a **Modular Feature Strategy**. The Core provides a complete basic edi
 
 ### Future Modules
 Future releases will introduce: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, and Integrations.
+
+## Contributors
+
+Developed and maintained by [Kharis Destian Maulana](https://github.com/Kharisdestianmaulana-hub).
+
+We welcome contributions from the community! See the [Contributors Graph](https://github.com/Kharisdestianmaulana-hub/Kino/graphs/contributors) for a full list of people who have helped build Kino.
 
 ## License
 
@@ -323,6 +331,12 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 
 ### Modul Masa Depan
 Rilis di masa depan akan memperkenalkan: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, dan Integrasi.
+
+## Kontributor
+
+Dikembangkan dan dikelola oleh [Kharis Destian Maulana](https://github.com/Kharisdestianmaulana-hub).
+
+Kami menyambut baik kontribusi dari komunitas! Lihat [Grafik Kontributor](https://github.com/Kharisdestianmaulana-hub/Kino/graphs/contributors) untuk daftar lengkap pihak-pihak yang telah membantu membangun Kino.
 
 ## Lisensi
 
