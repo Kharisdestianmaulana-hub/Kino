@@ -139,7 +139,9 @@ No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
 
 ## Roadmap
 
-Kino is under active development. Here is what is planned for future releases:
+Kino uses a **Modular Feature Strategy**. The Core provides a complete basic editing workflow, while advanced features are implemented as optional modules.
+
+### v1.0 Target: Core + 6 Modules
 
 | Status | Feature |
 |---|---|
@@ -151,9 +153,16 @@ Kino is under active development. Here is what is planned for future releases:
 | Done | Full undo/redo history |
 | Done | Razor / Blade tool (Split clips) |
 | Done | Clip edge trimming (Drag to resize) |
-| Planned | Video transitions and effects |
-| Planned | Text and title overlays |
-| Planned | Audio volume keyframing |
+| Done | Text and title overlays |
+| Planned | Module 1: Effects |
+| Planned | Module 2: Transitions |
+| Planned | Module 3: Advanced Subtitles |
+| Planned | Module 4: Professional Color |
+| Planned | Module 5: Audio Pro |
+| Planned | Module 6: Advanced Export |
+
+### Future Modules
+Future releases will introduce: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, and Integrations.
 
 ## License
 
@@ -254,7 +263,9 @@ Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
 
 ## Peta Jalan (Roadmap)
 
-Kino sedang dalam pengembangan aktif. Berikut rencana untuk rilis mendatang:
+Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur kerja pengeditan dasar yang lengkap, sementara fitur-fitur lanjutan diimplementasikan sebagai modul opsional.
+
+### Target v1.0: Core + 6 Modul
 
 | Status | Fitur |
 |---|---|
@@ -266,9 +277,16 @@ Kino sedang dalam pengembangan aktif. Berikut rencana untuk rilis mendatang:
 | Selesai | Riwayat undo/redo penuh |
 | Selesai | Alat pemotong / Razor tool (Split klip) |
 | Selesai | Pemangkasan ujung klip (Clip trimming) |
-| Direncanakan | Transisi dan efek video |
-| Direncanakan | Overlay teks dan judul |
-| Direncanakan | Keyframing volume audio |
+| Selesai | Overlay teks dan judul |
+| Direncanakan | Modul 1: Efek (Effects) |
+| Direncanakan | Modul 2: Transisi (Transitions) |
+| Direncanakan | Modul 3: Subtitle Lanjutan |
+| Direncanakan | Modul 4: Warna Profesional |
+| Direncanakan | Modul 5: Audio Pro |
+| Direncanakan | Modul 6: Ekspor Lanjutan |
+
+### Modul Masa Depan
+Rilis di masa depan akan memperkenalkan: Motion Graphics, Pro Media / Codecs, Masking & Tracking, AI Tools, Advanced Proxy, Social Media Presets, Templates, dan Integrasi.
 
 ## Lisensi
 

@@ -321,6 +321,10 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
         
         context.clear(CGRect(x: 0, y: 0, width: width, height: height))
         
+        // DEBUG: Draw red background to see if image is composited at all
+        context.setFillColor(CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0))
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        
         // Draw the text
         CTFrameDraw(frame, context)
         

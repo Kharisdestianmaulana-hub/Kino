@@ -138,7 +138,10 @@ struct ClipInspectorView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         TextField("Text", text: Binding(
                             get: { textProperties?.text ?? "" },
-                            set: { textProperties?.text = $0 }
+                            set: { 
+                                textProperties?.text = $0
+                                commitTransform(editing: false)
+                            }
                         ))
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .onChange(of: textProperties?.text) { _ in commitTransform(editing: false) }
