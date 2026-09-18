@@ -100,6 +100,7 @@ Kino is currently moving towards its v1.0 release. It is being developed by a sm
 | **Auto-Overlay** | Drop a clip on top of another and Kino automatically places it on a higher track instead of overwriting. No more accidental deletions. |
 | **Linked Audio/Video** | Importing a video automatically extracts and links its audio track. Move them together, or right-click to unlink for precise J/L cuts. |
 | **GPU Playback** | The playback engine wraps `AVMutableComposition` with custom `AVMutableVideoComposition` instructions for real-time opacity, scale, and transform blending. |
+| **Basic Color Correction** | Real-time GPU-accelerated adjustments for brightness, contrast, and saturation directly in the inspector. |
 | **Offline Media Warning** | Smartly detects when media is moved or deleted, instantly providing a visual "Offline" warning with yellow-black stripes on the canvas without crashing the app. Complete with a "Relink" feature. |
 | **Text & Typography** | Custom text engine supporting font changes, colors (native macOS Color Picker), bounding box scaling, and instant text alignment. |
 | **Autosave System** | Projects are automatically saved in the background upon any significant change, ensuring no edits are lost during power outages or sudden app closures. |
@@ -182,6 +183,7 @@ Kino uses a **Modular Feature Strategy**. The Core provides a complete basic edi
 | ✅ Stable | Autosave & Recovery system |
 | ✅ Stable | Missing-media detection & relinking |
 | ✅ Stable | Comprehensive metadata inspector |
+| ✅ Stable | Basic color adjustments (Brightness, Contrast, Saturation) |
 | 📋 Planned | Module 1: Effects |
 | 📋 Planned | Module 2: Transitions |
 | 📋 Planned | Module 3: Advanced Subtitles |
@@ -273,6 +275,7 @@ Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan
 | **Auto-Overlay** | Jatuhkan klip di atas klip lain dan Kino otomatis menempatkannya di track yang lebih tinggi, bukan menimpa. Tidak ada lagi penghapusan yang tidak disengaja. |
 | **Tautan Audio/Video** | Mengimpor video otomatis mengekstrak dan menautkan track audionya. Gerakkan bersama-sama, atau klik kanan untuk memisahkan demi J/L cut yang presisi. |
 | **Pemutaran GPU** | Mesin pemutar membungkus `AVMutableComposition` dengan instruksi `AVMutableVideoComposition` kustom untuk pencampuran opasitas, skala, dan transformasi secara real-time. |
+| **Koreksi Warna Dasar** | Penyesuaian real-time yang diakselerasi GPU untuk brightness, contrast, dan saturation langsung dari inspector. |
 | **Peringatan Media Offline** | Secara pintar mendeteksi saat media dipindah ke Flashdisk atau dihapus, langsung memberi peringatan visual "Offline" dengan garis kuning-hitam di kanvas tanpa membuat aplikasi crash. Lengkap dengan fitur "Relink". |
 | **Teks & Tipografi** | Engine teks kustom yang mendukung perubahan font, warna (Color Picker macOS asli), skala bounding box, dan perataan teks secara instan. |
 | **Sistem Autosave** | Proyek otomatis disimpan di latar belakang setiap ada perubahan signifikan, menjamin tidak ada editan yang hilang ketika listrik padam atau aplikasi tertutup tiba-tiba. |
@@ -355,6 +358,7 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 | ✅ Stable | Sistem Autosave & Recovery cerdas |
 | ✅ Stable | Manajemen Media Offline & Relinking |
 | ✅ Stable | Metadata Inspector ekstensif |
+| ✅ Stable | Penyesuaian warna dasar (Brightness, Contrast, Saturation) |
 | 📋 Planned | Modul 1: Efek (Effects) |
 | 📋 Planned | Modul 2: Transisi (Transitions) |
 | 📋 Planned | Modul 3: Subtitle Lanjutan |
