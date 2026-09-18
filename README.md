@@ -168,7 +168,9 @@ No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
 
 Kino uses a **Modular Feature Strategy**. The Core provides a complete basic editing workflow, while advanced features are implemented as optional modules.
 
-### v1.0 Target: Core + 6 Modules
+🎉 **Status Update:** All Core features (including Basic Color Adjustments and Basic Keyframes) are now **100% complete**! Development is currently shifting towards the Module Management System (plugin architecture) before tackling the optional modules.
+
+### v1.0 Target: Core (Completed) + 6 Modules
 
 | Status | Feature |
 |---|---|
@@ -345,7 +347,9 @@ Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
 
 Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur kerja pengeditan dasar yang lengkap, sementara fitur-fitur lanjutan diimplementasikan sebagai modul opsional.
 
-### Target v1.0: Core + 6 Modul
+🎉 **Status Update:** Seluruh fitur Core (termasuk Penyesuaian Warna dan Sistem Keyframe Dasar) kini telah **100% selesai**! Fokus pengembangan saat ini bergeser ke perancangan *Module Management System* (arsitektur plugin) sebelum masuk ke pengembangan modul opsional.
+
+### Target v1.0: Core (Selesai) + 6 Modul
 
 | Status | Fitur |
 |---|---|
