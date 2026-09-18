@@ -513,6 +513,19 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                     }
                     
                     if var img = sourceImage {
+                        
+                        // Apply Color Adjustment Filter
+                        if let colorAdj = clip.colorAdjustment {
+                            let filter = CIFilter(name: "CIColorControls")
+                            filter?.setValue(img, forKey: kCIInputImageKey)
+                            filter?.setValue(colorAdj.brightness, forKey: kCIInputBrightnessKey)
+                            filter?.setValue(colorAdj.contrast, forKey: kCIInputContrastKey)
+                            filter?.setValue(colorAdj.saturation, forKey: kCIInputSaturationKey)
+                            if let outputImg = filter?.outputImage {
+                                img = outputImg
+                            }
+                        }
+                        
                         // Center image to renderSize
                         let imgExtent = img.extent
                         

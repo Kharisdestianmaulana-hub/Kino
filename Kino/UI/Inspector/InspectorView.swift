@@ -82,7 +82,20 @@ public struct InspectorView: View {
             VStack(alignment: .leading, spacing: 12) {
                 InspectorRow(title: "Name", value: asset.originalURL.lastPathComponent)
                 InspectorRow(title: "Type", value: asset.metadata.isImage ? "Photo" : "Video/Audio")
-                InspectorRow(title: "Status", value: asset.isMissing ? "Offline ⚠️" : "Online ✅")
+                
+                HStack {
+                    Text("Status")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: asset.isMissing ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                            .foregroundColor(asset.isMissing ? .red : .green)
+                        Text(asset.isMissing ? "Offline" : "Online")
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                    }
+                }
                 
                 if !asset.metadata.isImage && asset.metadata.duration > 0 {
                     let mins = Int(asset.metadata.duration) / 60
@@ -137,6 +150,7 @@ struct ClipInspectorView: View {
     let trackID: UUID
     
     @State private var transform: ClipTransform
+    @State private var colorAdjustment: ColorAdjustment
     @State private var volume: Float
     @State private var textProperties: TextProperties?
     @State private var isEditing = false
@@ -147,6 +161,7 @@ struct ClipInspectorView: View {
         self.sequenceID = sequenceID
         self.trackID = trackID
         _transform = State(initialValue: clip.transform)
+        _colorAdjustment = State(initialValue: clip.colorAdjustment ?? ColorAdjustment())
         _volume = State(initialValue: clip.volume)
         _textProperties = State(initialValue: clip.textProperties)
     }
@@ -243,6 +258,19 @@ struct ClipInspectorView: View {
                     .opacity(0.5)
                 
                 VStack(alignment: .leading, spacing: 16) {
+                    InspectorSectionHeader(title: "COLOR ADJUSTMENTS")
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        InspectorSliderField(title: "Brightness", value: $colorAdjustment.brightness, range: -1.0...1.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
+                        InspectorSliderField(title: "Contrast", value: $colorAdjustment.contrast, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
+                        InspectorSliderField(title: "Saturation", value: $colorAdjustment.saturation, range: 0.0...2.0, suffix: "", multiplier: 1, decimals: 2, onEditingChanged: commitTransform)
+                    }
+                }
+                
+                Divider()
+                    .opacity(0.5)
+                
+                VStack(alignment: .leading, spacing: 16) {
                     InspectorSectionHeader(title: "AUDIO")
                     
                     VStack(alignment: .leading, spacing: 12) {
@@ -257,6 +285,7 @@ struct ClipInspectorView: View {
         .onChange(of: clip) { newClip in
             if !isEditing {
                 transform = newClip.transform
+                colorAdjustment = newClip.colorAdjustment ?? ColorAdjustment()
                 volume = newClip.volume
                 textProperties = newClip.textProperties
             }
@@ -265,6 +294,17 @@ struct ClipInspectorView: View {
             if isEditing {
                 var newClip = clip
                 newClip.transform = newTransform
+                newClip.colorAdjustment = colorAdjustment
+                newClip.volume = volume
+                newClip.textProperties = textProperties
+                workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
+            }
+        }
+        .onChange(of: colorAdjustment) { newColor in
+            if isEditing {
+                var newClip = clip
+                newClip.transform = transform
+                newClip.colorAdjustment = newColor
                 newClip.volume = volume
                 newClip.textProperties = textProperties
                 workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
@@ -274,6 +314,7 @@ struct ClipInspectorView: View {
             if isEditing {
                 var newClip = clip
                 newClip.transform = transform
+                newClip.colorAdjustment = colorAdjustment
                 newClip.volume = newVolume
                 newClip.textProperties = textProperties
                 workspace.previewUpdateClipProperties(newClip, inTrack: trackID, inSequence: sequenceID)
@@ -289,6 +330,7 @@ struct ClipInspectorView: View {
         isEditing = editing
         var newClip = clip
         newClip.transform = transform
+        newClip.colorAdjustment = colorAdjustment
         newClip.volume = volume
         newClip.textProperties = textProperties
         
@@ -371,6 +413,8 @@ struct InspectorSliderField: View {
     let range: ClosedRange<Double>
     let suffix: String
     let multiplier: Double
+    var decimals: Int = 0
+    var customDragStep: Double? = nil
     var onEditingChanged: (Bool) -> Void
     
     var body: some View {
@@ -384,7 +428,7 @@ struct InspectorSliderField: View {
                     value: $value,
                     suffix: suffix,
                     displayMultiplier: multiplier,
-                    decimals: 0,
+                    decimals: decimals,
                     range: range,
                     dragStep: dragStep,
                     onEditingChanged: onEditingChanged
@@ -397,8 +441,9 @@ struct InspectorSliderField: View {
     }
     
     private var dragStep: Double {
+        if let custom = customDragStep { return custom }
         switch title {
-        case "Scale", "Opacity", "Volume":
+        case "Scale", "Opacity", "Volume", "Brightness", "Contrast", "Saturation":
             return 0.01
         case "Rotation":
             return 1

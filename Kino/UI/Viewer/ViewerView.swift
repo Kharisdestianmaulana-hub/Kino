@@ -131,6 +131,9 @@ public struct ViewerView: View {
             .background(Color(NSColor.windowBackgroundColor))
         }
         .onChange(of: workspace.playheadPosition) { _ in
+            if !workspace.isPlaying, case .mediaAsset = workspace.selection {
+                workspace.clearSelection() // Scrubbing timeline kicks you out of media preview
+            }
             workspace.updatePreviewPresentationState()
             if !workspace.isPlaying { updatePlayer(forceTimeline: true) }
         }
@@ -161,10 +164,14 @@ public struct ViewerView: View {
         .onAppear {
             updatePlayer(forceTimeline: true)
         }
-        // Menjalankan garis merah secara otomatis saat diputar!
+        // Menjalankan garis merah secara otomatis saat diputar, KECUALI sedang preview media
         .onReceive(Timer.publish(every: 1.0/30.0, on: .main, in: .common).autoconnect()) { _ in
             if workspace.isPlaying {
-                workspace.playheadPosition += 1.0/30.0
+                if case .mediaAsset = workspace.selection {
+                    // Do nothing to the timeline playhead
+                } else {
+                    workspace.playheadPosition += 1.0/30.0
+                }
             }
         }
     }

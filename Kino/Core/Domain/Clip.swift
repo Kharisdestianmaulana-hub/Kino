@@ -32,6 +32,18 @@ public struct TextProperties: Codable, Equatable {
     }
 }
 
+public struct ColorAdjustment: Codable, Equatable {
+    public var brightness: Double
+    public var contrast: Double
+    public var saturation: Double
+    
+    public init(brightness: Double = 0.0, contrast: Double = 1.0, saturation: Double = 1.0) {
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+    }
+}
+
 public struct Clip: Codable, Identifiable, Equatable {
     public let id: UUID
     public var mediaAssetID: UUID?
@@ -49,13 +61,16 @@ public struct Clip: Codable, Identifiable, Equatable {
     /// Properties for visual manipulation
     public var transform: ClipTransform
     
+    /// Color adjustment parameters
+    public var colorAdjustment: ColorAdjustment?
+    
     /// Properties for audio manipulation (1.0 = 100%, 0.0 = mute)
     public var volume: Float
     
     /// ID of a linked clip (e.g. linked audio track)
     public var linkedClipID: UUID?
 
-    public init(id: UUID = UUID(), mediaAssetID: UUID? = nil, textProperties: TextProperties? = nil, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), volume: Float = 1.0, linkedClipID: UUID? = nil) {
+    public init(id: UUID = UUID(), mediaAssetID: UUID? = nil, textProperties: TextProperties? = nil, timelineStart: Double, sourceStart: Double, duration: Double, transform: ClipTransform = ClipTransform(), colorAdjustment: ColorAdjustment? = nil, volume: Float = 1.0, linkedClipID: UUID? = nil) {
         self.id = id
         self.mediaAssetID = mediaAssetID
         self.textProperties = textProperties
@@ -63,6 +78,7 @@ public struct Clip: Codable, Identifiable, Equatable {
         self.sourceStart = sourceStart
         self.duration = duration
         self.transform = transform
+        self.colorAdjustment = colorAdjustment
         self.volume = volume
         self.linkedClipID = linkedClipID
     }
@@ -78,6 +94,7 @@ public struct Clip: Codable, Identifiable, Equatable {
         self.duration = try container.decode(Double.self, forKey: .duration)
         
         self.transform = try container.decodeIfPresent(ClipTransform.self, forKey: .transform) ?? ClipTransform()
+        self.colorAdjustment = try container.decodeIfPresent(ColorAdjustment.self, forKey: .colorAdjustment)
         self.volume = try container.decodeIfPresent(Float.self, forKey: .volume) ?? 1.0
         self.linkedClipID = try container.decodeIfPresent(UUID.self, forKey: .linkedClipID)
     }
