@@ -126,6 +126,63 @@ public class PlaybackEngine {
         return playerItem
     }
     
+
+    private static func buildInstructions(for sequence: Sequence, composition: AVMutableComposition, compVideoTracks: [AVMutableCompositionTrack], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize) -> [KinoVideoCompositionInstruction] {
+        let duration = composition.duration.seconds
+        let videoTracks = sequence.tracks.filter { $0.type == .video }
+        
+        var timePoints = Set<Double>()
+        timePoints.insert(0.0)
+        timePoints.insert(duration)
+        
+        for track in videoTracks {
+            for clip in track.clips {
+                timePoints.insert(clip.timelineStart)
+                timePoints.insert(clip.timelineStart + clip.duration)
+            }
+        }
+        
+        let sortedPoints = Array(timePoints).sorted()
+        var instructions: [KinoVideoCompositionInstruction] = []
+        let compTrackIDs = compVideoTracks.map { $0.trackID }
+        
+        for i in 0..<sortedPoints.count - 1 {
+            let start = sortedPoints[i]
+            let end = sortedPoints[i+1]
+            let segDuration = end - start
+            if segDuration > 0.001 { // ignore extremely tiny rounding artifacts
+                let timeRange = CMTimeRange(start: CMTime(seconds: start, preferredTimescale: 600), duration: CMTime(seconds: segDuration, preferredTimescale: 600))
+                
+                var requiredTrackIDs: [NSValue] = []
+                for (trackIndex, track) in videoTracks.enumerated() {
+                    let compTrackID = compTrackIDs[trackIndex]
+                    
+                    let hasVideoMedia = track.clips.contains { clip in
+                        let clipEnd = clip.timelineStart + clip.duration
+                        let overlaps = (clip.timelineStart < end - 0.001 && clipEnd > start + 0.001)
+                        return overlaps && clip.textProperties == nil
+                    }
+                    
+                    if hasVideoMedia {
+                        requiredTrackIDs.append(NSNumber(value: compTrackID) as NSValue)
+                    }
+                }
+                
+                let instruction = KinoVideoCompositionInstruction(
+                    timeRange: timeRange,
+                    videoTracks: videoTracks,
+                    compTrackIDs: compTrackIDs,
+                    mediaReferences: mediaReferences,
+                    imageCache: imageCache,
+                    renderSize: renderSize,
+                    requiredTrackIDs: requiredTrackIDs
+                )
+                instructions.append(instruction)
+            }
+        }
+        return instructions
+    }
+
     public static func buildVideoComposition(for sequence: Sequence, in composition: AVMutableComposition, using mediaReferences: [MediaAsset], renderSize: CGSize, duration: CMTime) -> AVMutableVideoComposition? {
         let videoTracks = sequence.tracks.filter { $0.type == .video }
         let compVideoTracks = composition.tracks(withMediaType: .video)
@@ -151,22 +208,13 @@ public class PlaybackEngine {
             }
         }
         
-        let compTrackIDs = compVideoTracks.map { $0.trackID }
-        
-        let instruction = KinoVideoCompositionInstruction(
-            timeRange: CMTimeRange(start: .zero, duration: duration),
-            videoTracks: videoTracks,
-            compTrackIDs: compTrackIDs,
-            mediaReferences: mediaReferences,
-            imageCache: imageCache,
-            renderSize: renderSize
-        )
+        let instructions = buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize)
         
         let videoComposition = AVMutableVideoComposition()
         videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
         videoComposition.renderSize = renderSize
         videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
-        videoComposition.instructions = [instruction]
+        videoComposition.instructions = instructions
         
         return videoComposition
     }
@@ -200,18 +248,10 @@ public class PlaybackEngine {
                 }
             }
             
-            let compTrackIDs = compVideoTracks.map { $0.trackID }
-            let instruction = KinoVideoCompositionInstruction(
-                timeRange: CMTimeRange(start: .zero, duration: duration),
-                videoTracks: videoTracks,
-                compTrackIDs: compTrackIDs,
-                mediaReferences: mediaReferences,
-                imageCache: imageCache,
-                renderSize: renderSize
-            )
+            let instructions = Self.buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize)
             
             if let current = playerItem.videoComposition as? AVMutableVideoComposition {
-                current.instructions = [instruction]
+                current.instructions = instructions
                 // Toggle to force re-render of paused frame
                 playerItem.videoComposition = nil
                 playerItem.videoComposition = current
@@ -220,7 +260,7 @@ public class PlaybackEngine {
                 videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
                 videoComposition.renderSize = renderSize
                 videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
-                videoComposition.instructions = [instruction]
+                videoComposition.instructions = instructions
                 playerItem.videoComposition = videoComposition
             }
         }
@@ -259,7 +299,7 @@ public class KinoVideoCompositionInstruction: NSObject, AVVideoCompositionInstru
     public var imageCache: [UUID: CIImage]
     public var renderSize: CGSize
     
-    public init(timeRange: CMTimeRange, videoTracks: [Track], compTrackIDs: [CMPersistentTrackID], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize) {
+    public init(timeRange: CMTimeRange, videoTracks: [Track], compTrackIDs: [CMPersistentTrackID], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize, requiredTrackIDs: [NSValue]? = nil) {
         self.timeRange = timeRange
         self.videoTracks = videoTracks
         self.compTrackIDs = compTrackIDs
@@ -267,7 +307,7 @@ public class KinoVideoCompositionInstruction: NSObject, AVVideoCompositionInstru
         self.imageCache = imageCache
         self.renderSize = renderSize
         
-        self.requiredSourceTrackIDs = compTrackIDs.map { NSNumber(value: $0) as NSValue }
+        self.requiredSourceTrackIDs = requiredTrackIDs
     }
 }
 
@@ -321,9 +361,7 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
         
         context.clear(CGRect(x: 0, y: 0, width: width, height: height))
         
-        // DEBUG: Draw red background to see if image is composited at all
-        context.setFillColor(CGColor(red: 1.0, green: 0.0, blue: 0.0, alpha: 1.0))
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        context.clear(CGRect(x: 0, y: 0, width: width, height: height))
         
         // Draw the text
         CTFrameDraw(frame, context)
