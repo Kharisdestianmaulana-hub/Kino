@@ -6,8 +6,13 @@
 
   ![Swift](https://img.shields.io/badge/Swift-6.0-F05138?style=flat&logo=swift&logoColor=white)
   ![Platform](https://img.shields.io/badge/Platform-macOS-000000?style=flat&logo=apple&logoColor=white)
-  ![License](https://img.shields.io/badge/License-PolyForm%20Shield-blue?style=flat)
+  ![Apple Silicon](https://img.shields.io/badge/Apple_Silicon-Optimized-000000?style=flat&logo=apple&logoColor=white)
   ![Architecture](https://img.shields.io/badge/Architecture-SwiftUI%20%2B%20AVFoundation-purple?style=flat)
+  <br/>
+  ![Status](https://img.shields.io/badge/Status-Active_Development-success?style=flat)
+  ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)
+  ![License](https://img.shields.io/badge/License-PolyForm%20Shield-blue?style=flat)
+  ![GitHub Stars](https://img.shields.io/github/stars/Kharisdestianmaulana-hub/Kino?style=social)
 
   <br/>
   <sub>Built from the ground up for Apple Silicon. No cross-platform wrappers.</sub>
