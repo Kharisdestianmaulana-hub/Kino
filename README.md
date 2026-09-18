@@ -267,10 +267,13 @@ Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan
 | **Auto-Overlay** | Jatuhkan klip di atas klip lain dan Kino otomatis menempatkannya di track yang lebih tinggi, bukan menimpa. Tidak ada lagi penghapusan yang tidak disengaja. |
 | **Tautan Audio/Video** | Mengimpor video otomatis mengekstrak dan menautkan track audionya. Gerakkan bersama-sama, atau klik kanan untuk memisahkan demi J/L cut yang presisi. |
 | **Pemutaran GPU** | Mesin pemutar membungkus `AVMutableComposition` dengan instruksi `AVMutableVideoComposition` kustom untuk pencampuran opasitas, skala, dan transformasi secara real-time. |
+| **Peringatan Media Offline** | Secara pintar mendeteksi saat media dipindah ke Flashdisk atau dihapus, langsung memberi peringatan visual "Offline" dengan garis kuning-hitam di kanvas tanpa membuat aplikasi crash. Lengkap dengan fitur "Relink". |
+| **Teks & Tipografi** | Engine teks kustom yang mendukung perubahan font, warna (Color Picker macOS asli), skala bounding box, dan perataan teks secara instan. |
+| **Sistem Autosave** | Proyek otomatis disimpan di latar belakang setiap ada perubahan signifikan, menjamin tidak ada editan yang hilang ketika listrik padam atau aplikasi tertutup tiba-tiba. |
 | **Waveform Asli** | Gelombang suara dihasilkan dari data sampel PCM 16-bit asli melalui `AVAssetReader`, bukan garis acak. Track yang sunyi ditampilkan sebagai garis datar sehingga Anda langsung tahu. |
 | **Cache Thumbnail** | Cache di memori yang thread-safe memastikan scroll ratusan aset media tetap 60fps. Thumbnail dan waveform dibuat sekali, lalu disajikan dari memori. |
-| **Panel Inspector** | Sesuaikan posisi, skala, dan rotasi melalui slider yang presisi, atau geser langsung di kanvas untuk pengeditan visual. |
-| **Pola Command** | Setiap aksi di timeline dibungkus dalam objek perintah yang dapat dibalik (`MoveClipCommand`, `SplitClipCommand`, `CompositeCommand`), menyediakan fondasi untuk riwayat undo/redo penuh. |
+| **Panel Inspector** | Menampilkan info komplit file media (resolusi, framerate, status) dan menyediakan slider presisi untuk menyesuaikan properti klip di timeline. |
+| **Pola Command** | Setiap aksi di timeline dibungkus dalam objek perintah yang dapat dibalik (`MoveClipCommand`, `SplitClipCommand`), menyediakan fondasi untuk riwayat undo/redo penuh. |
 
 ## Arsitektur
 
@@ -342,7 +345,10 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 | ✅ Stable | Riwayat undo/redo penuh |
 | ✅ Stable | Alat pemotong / Razor tool (Split klip) |
 | ✅ Stable | Pemangkasan ujung klip (Clip trimming) |
-| ✅ Stable | Overlay teks dan judul |
+| ✅ Stable | Overlay teks (Font Picker, Bounding Box, Custom Color) |
+| ✅ Stable | Sistem Autosave & Recovery cerdas |
+| ✅ Stable | Manajemen Media Offline & Relinking otomatis |
+| ✅ Stable | Metadata Inspector ekstensif (Resolusi, FPS, Status) |
 | 📋 Planned | Modul 1: Efek (Effects) |
 | 📋 Planned | Modul 2: Transisi (Transitions) |
 | 📋 Planned | Modul 3: Subtitle Lanjutan |
