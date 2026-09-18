@@ -345,10 +345,10 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 | ✅ Stable | Riwayat undo/redo penuh |
 | ✅ Stable | Alat pemotong / Razor tool (Split klip) |
 | ✅ Stable | Pemangkasan ujung klip (Clip trimming) |
-| ✅ Stable | Overlay teks (Font Picker, Bounding Box, Custom Color) |
-| ✅ Stable | Sistem Autosave & Recovery cerdas |
-| ✅ Stable | Manajemen Media Offline & Relinking otomatis |
-| ✅ Stable | Metadata Inspector ekstensif (Resolusi, FPS, Status) |
+| ✅ Stable | Overlay teks / Text & Title overlays |
+| ✅ Stable | Penyimpanan otomatis / Autosave & Recovery |
+| ✅ Stable | Deteksi media hilang / Missing-media detection & relinking |
+| ✅ Stable | Metadata inspektur / Comprehensive metadata inspector |
 | 📋 Planned | Modul 1: Efek (Effects) |
 | 📋 Planned | Modul 2: Transisi (Transitions) |
 | 📋 Planned | Modul 3: Subtitle Lanjutan |
