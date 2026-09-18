@@ -1,4 +1,4 @@
-# Video Editor Documentation
+# Kino Documentation
 
 Documentation for the native macOS video editor.
 
@@ -93,6 +93,6 @@ The documentation also defines the implementation blueprint for the native Swift
 
 ## Product Identity
 
-**Kino** is the working product name for this native macOS video editor.
+**Kino** is the official product name for this native macOS video editor.
 
-The product name should be written as **Kino** in documentation, UI copy, project metadata and branding.
+The product name must be written as **Kino** consistently across all documentation, UI copy, project metadata, and branding.
