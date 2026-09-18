@@ -180,7 +180,17 @@ Future releases will introduce: Motion Graphics, Pro Media / Codecs, Masking & T
 
 ## Contributors
 
-Developed and maintained by [Kharis Destian Maulana](https://github.com/Kharisdestianmaulana-hub).
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Kharisdestianmaulana-hub">
+        <img src="https://github.com/Kharisdestianmaulana-hub.png?size=100" width="100px;" style="border-radius: 50%;" alt="Kharis Destian Maulana"/><br />
+        <sub><b>Kharis Destian Maulana</b></sub>
+      </a><br />
+      <span title="Creator & Maintainer">👑</span>
+    </td>
+  </tr>
+</table>
 
 We welcome contributions from the community! See the [Contributors Graph](https://github.com/Kharisdestianmaulana-hub/Kino/graphs/contributors) for a full list of people who have helped build Kino.
 
@@ -334,7 +344,17 @@ Rilis di masa depan akan memperkenalkan: Motion Graphics, Pro Media / Codecs, Ma
 
 ## Kontributor
 
-Dikembangkan dan dikelola oleh [Kharis Destian Maulana](https://github.com/Kharisdestianmaulana-hub).
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Kharisdestianmaulana-hub">
+        <img src="https://github.com/Kharisdestianmaulana-hub.png?size=100" width="100px;" style="border-radius: 50%;" alt="Kharis Destian Maulana"/><br />
+        <sub><b>Kharis Destian Maulana</b></sub>
+      </a><br />
+      <span title="Kreator & Pengelola">👑</span>
+    </td>
+  </tr>
+</table>
 
 Kami menyambut baik kontribusi dari komunitas! Lihat [Grafik Kontributor](https://github.com/Kharisdestianmaulana-hub/Kino/graphs/contributors) untuk daftar lengkap pihak-pihak yang telah membantu membangun Kino.
 
