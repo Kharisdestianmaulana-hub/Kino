@@ -146,28 +146,31 @@ struct ClipInspectorView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .onChange(of: textProperties?.text) { _ in commitTransform(editing: false) }
                         
+                        InspectorSearchableFontPicker(
+                            title: "Font",
+                            selectedFont: Binding(
+                                get: { textProperties?.fontName ?? "Helvetica" },
+                                set: { 
+                                    textProperties?.fontName = $0
+                                    commitTransform(editing: false)
+                                }
+                            ),
+                            currentText: textProperties?.text ?? ""
+                        )
+                        .padding(.vertical, 4)
+                        
                         InspectorSliderField(title: "Font Size", value: Binding(
                             get: { textProperties?.fontSize ?? 100 },
                             set: { textProperties?.fontSize = $0 }
                         ), range: 10...500, suffix: "pt", multiplier: 1, onEditingChanged: commitTransform)
                         
-                        ColorPicker("Color", selection: Binding<Color>(
-                            get: {
-                                if let hex = textProperties?.colorHex, let nsColor = NSColor(hex: hex) {
-                                    return Color(nsColor)
-                                }
-                                return Color.white
-                            },
-                            set: { newColor in
-                                guard let nsColor = NSColor(newColor).usingColorSpace(.deviceRGB) else { return }
-                                let r = Int(nsColor.redComponent * 255)
-                                let g = Int(nsColor.greenComponent * 255)
-                                let b = Int(nsColor.blueComponent * 255)
-                                let hex = String(format: "#%02X%02X%02X", r, g, b)
-                                textProperties?.colorHex = hex
-                                commitTransform(editing: false)
-                            }
-                        ))
+                        InspectorColorPickerGroup(
+                            hexColor: Binding(
+                                get: { textProperties?.colorHex ?? "#FFFFFF" },
+                                set: { textProperties?.colorHex = $0 }
+                            ),
+                            onCommit: { commitTransform(editing: false) }
+                        )
                     }
                 }
                 
@@ -178,8 +181,31 @@ struct ClipInspectorView: View {
                 InspectorSectionHeader(title: "TRANSFORM")
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    InspectorValueField(title: "Position X", value: $transform.positionX, suffix: "px", onEditingChanged: commitTransform)
-                    InspectorValueField(title: "Position Y", value: $transform.positionY, suffix: "px", onEditingChanged: commitTransform)
+                    HStack {
+                        Text("Position")
+                            .font(.subheadline)
+                        Spacer()
+                        HStack(spacing: 4) {
+                            InspectorNumberBox(
+                                value: $transform.positionX,
+                                suffix: "px",
+                                prefix: "X",
+                                displayMultiplier: 1,
+                                decimals: 1,
+                                dragStep: 1,
+                                onEditingChanged: commitTransform
+                            )
+                            InspectorNumberBox(
+                                value: $transform.positionY,
+                                suffix: "px",
+                                prefix: "Y",
+                                displayMultiplier: 1,
+                                decimals: 1,
+                                dragStep: 1,
+                                onEditingChanged: commitTransform
+                            )
+                        }
+                    }
                     
                     InspectorSliderField(title: "Scale", value: $transform.scale, range: 0.1...3.0, suffix: "%", multiplier: 100, onEditingChanged: commitTransform)
                     InspectorSliderField(title: "Rotation", value: $transform.rotation, range: -180...180, suffix: "°", multiplier: 1, onEditingChanged: commitTransform)
@@ -360,6 +386,7 @@ struct InspectorSliderField: View {
 struct InspectorNumberBox: View {
     @Binding var value: Double
     let suffix: String
+    var prefix: String? = nil
     let displayMultiplier: Double
     let decimals: Int
     var range: ClosedRange<Double>? = nil
@@ -392,6 +419,14 @@ struct InspectorNumberBox: View {
     
     var body: some View {
         HStack(spacing: 4) {
+            if let prefix = prefix {
+                Text(prefix)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .frame(width: 12, alignment: .center)
+                    .fixedSize(horizontal: true, vertical: false)
+            }
+            
             InspectorNumberTextField(
                 text: textBinding,
                 onEditingChanged: handleEditingChanged,
@@ -400,7 +435,7 @@ struct InspectorNumberBox: View {
                 onDragChanged: updateDragEditing,
                 onDragEnded: finishEditing
             )
-                .frame(width: 50)
+            .frame(minWidth: 35, idealWidth: 45, maxWidth: 50)
             
             Text(suffix)
                 .font(.subheadline)
@@ -622,5 +657,194 @@ final class InspectorDraggableTextField: NSTextField {
         CGAssociateMouseAndMouseCursorPosition(boolean_t(1))
         NSCursor.unhide()
         isScrubbingCursor = false
+    }
+}
+
+struct InspectorSearchableFontPicker: View {
+    let title: String
+    @Binding var selectedFont: String
+    var currentText: String
+    @State private var isPresented = false
+    @State private var searchText = ""
+    
+    private let allFonts = NSFontManager.shared.availableFontFamilies
+    
+    var filteredFonts: [String] {
+        if searchText.isEmpty {
+            return allFonts
+        } else {
+            return allFonts.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
+    
+    var body: some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Button(action: {
+                isPresented.toggle()
+                searchText = ""
+            }) {
+                HStack {
+                    Text(selectedFont)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                }
+                .frame(maxWidth: 160)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color(NSColor.separatorColor), lineWidth: 1)
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+            .popover(isPresented: $isPresented, arrowEdge: .trailing) {
+                VStack(spacing: 0) {
+                    TextField("Search font...", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                    
+                    Divider()
+                    
+                    List(filteredFonts, id: \.self) { font in
+                        Button(action: {
+                            selectedFont = font
+                            isPresented = false
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(font)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    let previewText = currentText.isEmpty ? "Aa Bb Cc" : currentText
+                                    Text(previewText)
+                                        .font(.custom(font, size: 16))
+                                        .foregroundColor(.primary)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                }
+                                Spacer()
+                                if selectedFont == font {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.accentColor)
+                                }
+                            }
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .frame(width: 260, height: 300)
+                }
+            }
+        }
+    }
+}
+
+struct InspectorColorPickerGroup: View {
+    @Binding var hexColor: String
+    var onCommit: () -> Void
+    
+    private let presetColors: [String] = [
+        "#FFFFFF", // White
+        "#000000", // Black
+        "#8E8E93", // Gray
+        "#FF3B30", // Red
+        "#FF9500", // Orange
+        "#FFCC00", // Yellow
+        "#34C759", // Green
+        "#00C7BE", // Teal
+        "#32ADE6", // Cyan
+        "#007AFF", // Blue
+        "#AF52DE", // Purple
+        "#FF2D55"  // Pink
+    ]
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Color")
+                    .frame(width: 80, alignment: .leading)
+                
+                FullWidthColorWell(color: Binding(
+                    get: {
+                        if let nsColor = NSColor(hex: hexColor) {
+                            return Color(nsColor)
+                        }
+                        return Color.white
+                    },
+                    set: { newColor in
+                        updateHex(from: newColor)
+                    }
+                ))
+                .frame(height: 24)
+            }
+            
+            let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 6)
+            LazyVGrid(columns: columns, spacing: 6) {
+                ForEach(presetColors, id: \.self) { hex in
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(NSColor(hex: hex) ?? .white))
+                        .frame(height: 24)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(
+                                    hexColor.uppercased() == hex ? Color.accentColor : Color(NSColor.separatorColor).opacity(0.5),
+                                    lineWidth: hexColor.uppercased() == hex ? 2.5 : 1
+                                )
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            hexColor = hex
+                            onCommit()
+                        }
+                }
+            }
+        }
+    }
+    
+    private func updateHex(from color: Color) {
+        guard let nsColor = NSColor(color).usingColorSpace(.deviceRGB) else { return }
+        let r = Int(nsColor.redComponent * 255)
+        let g = Int(nsColor.greenComponent * 255)
+        let b = Int(nsColor.blueComponent * 255)
+        let hex = String(format: "#%02X%02X%02X", r, g, b)
+        hexColor = hex
+        onCommit()
+    }
+}
+
+struct FullWidthColorWell: NSViewRepresentable {
+    @Binding var color: Color
+    
+    func makeNSView(context: Context) -> NSColorWell {
+        let well = NSColorWell()
+        well.target = context.coordinator
+        well.action = #selector(Coordinator.colorChanged(_:))
+        return well
+    }
+    
+    func updateNSView(_ nsView: NSColorWell, context: Context) {
+        nsView.color = NSColor(color)
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject {
+        var parent: FullWidthColorWell
+        init(_ parent: FullWidthColorWell) { self.parent = parent }
+        
+        @objc func colorChanged(_ sender: NSColorWell) {
+            parent.color = Color(sender.color)
+        }
     }
 }

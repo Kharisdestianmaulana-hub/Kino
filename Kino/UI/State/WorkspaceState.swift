@@ -355,24 +355,39 @@ public class WorkspaceState: ObservableObject {
     public func activeVideoClipContext(at time: Double) -> ActiveVideoClipContext? {
         guard let project = project,
               let seqID = selectedSequenceID,
-              let seq = project.sequences.first(where: { $0.id == seqID }),
-              let videoTrack = seq.tracks.first(where: { $0.type == .video }) else {
+              let seq = project.sequences.first(where: { $0.id == seqID }) else {
             return nil
         }
         
+        let videoTracks = seq.tracks.filter { $0.type == .video }
         let epsilon: Double = 0.001
-        let clip = videoTrack.clips
-            .sorted { $0.timelineStart < $1.timelineStart }
-            .first {
-                time >= ($0.timelineStart - epsilon) && time < ($0.timelineStart + $0.duration + epsilon)
-            }
         
-        guard let clip else {
-            print("[DEBUG] activeVideoClipContext at \(time) returned nil. Clips: \(videoTrack.clips.map { "\($0.id): start=\($0.timelineStart) dur=\($0.duration)" })")
-            return nil
+        // If a clip is already selected, check if it's still under the playhead
+        if case .clip(let selectedID) = selection {
+            for videoTrack in videoTracks {
+                if let clip = videoTrack.clips.first(where: {
+                    $0.id == selectedID &&
+                    time >= ($0.timelineStart - epsilon) &&
+                    time < ($0.timelineStart + $0.duration + epsilon)
+                }) {
+                    return ActiveVideoClipContext(clip: clip, trackID: videoTrack.id, sequenceID: seqID)
+                }
+            }
         }
         
-        return ActiveVideoClipContext(clip: clip, trackID: videoTrack.id, sequenceID: seqID)
+        // Otherwise, find the topmost clip at the playhead (first track = topmost in UI)
+        for videoTrack in videoTracks {
+            if let clip = videoTrack.clips
+                .sorted(by: { $0.timelineStart < $1.timelineStart })
+                .first(where: {
+                    time >= ($0.timelineStart - epsilon) &&
+                    time < ($0.timelineStart + $0.duration + epsilon)
+                }) {
+                return ActiveVideoClipContext(clip: clip, trackID: videoTrack.id, sequenceID: seqID)
+            }
+        }
+        
+        return nil
     }
     
     public func previewUpdateClipProperties(_ clip: Clip, inTrack trackID: UUID, inSequence sequenceID: UUID) {
@@ -382,7 +397,8 @@ public class WorkspaceState: ObservableObject {
         
         if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == sequenceID }) {
             Task { @MainActor in
-                self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences)
+                let renderSize = CGSize(width: proj.settings.resolutionWidth, height: proj.settings.resolutionHeight)
+                self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize)
             }
         }
     }
@@ -399,7 +415,8 @@ public class WorkspaceState: ObservableObject {
             
             if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == selectedSequenceID }) {
                 Task { @MainActor in
-                    self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences)
+                    let renderSize = CGSize(width: proj.settings.resolutionWidth, height: proj.settings.resolutionHeight)
+                    self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize)
                 }
             }
             
@@ -420,9 +437,11 @@ public class WorkspaceState: ObservableObject {
             self.currentCompositionItem = nil
             return
         }
+        let renderSize = CGSize(width: project.settings.resolutionWidth, height: project.settings.resolutionHeight)
         
         Task {
-            let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences)
+            let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize)
+            
             await MainActor.run {
                 self.currentCompositionItem = item
                 self.updatePreviewPresentationState()
@@ -457,7 +476,8 @@ public class WorkspaceState: ObservableObject {
             
             Task {
                 do {
-                    guard let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, isExport: true) else { return }
+                    let renderSize = CGSize(width: project.settings.resolutionWidth, height: project.settings.resolutionHeight)
+                    guard let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize, isExport: true) else { return }
                     try await exportService.export(item: item, to: url) { progress in
                         DispatchQueue.main.async {
                             self.exportProgress = progress

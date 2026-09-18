@@ -335,7 +335,6 @@ private struct ViewerTransformOverlay: View {
     }
     
         private func getMediaSize(for context: ActiveVideoClipContext, inside rect: CGRect) -> CGSize {
-        // Use the project render size (same as KinoVideoCompositor) to match the actual rendered frame
         guard let settings = workspace.project?.settings,
               settings.resolutionWidth > 0,
               settings.resolutionHeight > 0 else {
@@ -347,6 +346,23 @@ private struct ViewerTransformOverlay: View {
         let scaleX = rect.width / resW
         let scaleY = rect.height / resH
         let baseScale = min(scaleX, scaleY)
+        
+        // For text clips, size the bounding box to the text content
+        if let textProps = context.clip.textProperties {
+            let text = textProps.text.isEmpty ? " " : textProps.text
+            let nsFont = NSFont(name: textProps.fontName, size: CGFloat(textProps.fontSize))
+                ?? NSFont.systemFont(ofSize: CGFloat(textProps.fontSize))
+            let attributes: [NSAttributedString.Key: Any] = [.font: nsFont]
+            let textSize = (text as NSString).size(withAttributes: attributes)
+            
+            print("[DEBUG] getMediaSize text='\(text)' font=\(textProps.fontSize) size=\(textSize) baseScale=\(baseScale)")
+            
+            let padding: CGFloat = 24
+            return CGSize(
+                width: (textSize.width + padding) * baseScale,
+                height: (textSize.height + padding) * baseScale
+            )
+        }
         
         return CGSize(width: resW * baseScale, height: resH * baseScale)
     }
@@ -362,7 +378,15 @@ private struct ViewerTransformOverlay: View {
         let scaledWidth = mediaSize.width * CGFloat(transform.scale)
         let scaledHeight = mediaSize.height * CGFloat(transform.scale)
         
-        ZStack {
+        // Hitung baseScale untuk menyelaraskan pergerakan posisi dengan kanvas 4K
+        var baseScale: CGFloat = 1.0
+        if let settings = workspace.project?.settings, settings.resolutionWidth > 0, settings.resolutionHeight > 0 {
+            let resW = CGFloat(settings.resolutionWidth)
+            let resH = CGFloat(settings.resolutionHeight)
+            baseScale = min(rect.width / resW, rect.height / resH)
+        }
+        
+        return ZStack {
             // Hitbox area untuk frame video yang mengikuti skala
             Rectangle()
                 .fill(Color.white.opacity(0.01))
@@ -388,8 +412,8 @@ private struct ViewerTransformOverlay: View {
         }
         .rotationEffect(.degrees(transform.rotation))
         .position(
-            x: rect.midX + CGFloat(transform.positionX),
-            y: rect.midY + CGFloat(transform.positionY)
+            x: rect.midX + (CGFloat(transform.positionX) * baseScale),
+            y: rect.midY + (CGFloat(transform.positionY) * baseScale)
         )
         .transaction { transaction in
             transaction.animation = nil

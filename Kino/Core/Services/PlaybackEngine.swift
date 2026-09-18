@@ -11,11 +11,85 @@ public class PlaybackEngine {
     
     public init() {}
     
+    // MARK: - Blank Carrier Video
+    // AVFoundation skips calling our custom compositor when all composition tracks
+    // only have empty time ranges (insertEmptyTimeRange). To render text clips, we need
+    // real video frames on the track so AVFoundation invokes startRequest().
+    // This generates a tiny black .mov (2 frames, ~few KB) used as a "carrier".
+    
+    private static var _blankCarrierURL: URL?
+    
+    private static func getBlankCarrierAsset(renderSize: CGSize) async -> AVURLAsset? {
+        if let url = _blankCarrierURL, FileManager.default.fileExists(atPath: url.path) {
+            return AVURLAsset(url: url)
+        }
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let asset = Self._generateBlankCarrier(renderSize: renderSize)
+                continuation.resume(returning: asset)
+            }
+        }
+    }
+    
+    private static func _generateBlankCarrier(renderSize: CGSize) -> AVURLAsset? {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("kino_blank_carrier.mov")
+        try? FileManager.default.removeItem(at: url)
+        
+        guard let writer = try? AVAssetWriter(outputURL: url, fileType: .mov) else {
+            print("[PlaybackEngine] Failed to create AVAssetWriter for blank carrier")
+            return nil
+        }
+        
+        let settings: [String: Any] = [
+            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoWidthKey: Int(renderSize.width),
+            AVVideoHeightKey: Int(renderSize.height)
+        ]
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
+        input.expectsMediaDataInRealTime = false
+        
+        let pbAttrs: [String: Any] = [
+            kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32BGRA),
+            kCVPixelBufferWidthKey as String: Int(renderSize.width),
+            kCVPixelBufferHeightKey as String: Int(renderSize.height)
+        ]
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: pbAttrs)
+        
+        writer.add(input)
+        writer.startWriting()
+        writer.startSession(atSourceTime: .zero)
+        
+        var pb: CVPixelBuffer?
+        CVPixelBufferCreate(kCFAllocatorDefault, Int(renderSize.width), Int(renderSize.height), kCVPixelFormatType_32BGRA, nil, &pb)
+        guard let pixelBuffer = pb else { return nil }
+        
+        CVPixelBufferLockBaseAddress(pixelBuffer, [])
+        memset(CVPixelBufferGetBaseAddress(pixelBuffer)!, 0, CVPixelBufferGetDataSize(pixelBuffer))
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
+        
+        // 2 frames spanning 3600 seconds — file is tiny (~few KB)
+        adaptor.append(pixelBuffer, withPresentationTime: CMTime(value: 0, timescale: 600))
+        while !input.isReadyForMoreMediaData { Thread.sleep(forTimeInterval: 0.001) }
+        adaptor.append(pixelBuffer, withPresentationTime: CMTime(value: 3600 * 600, timescale: 600))
+        
+        input.markAsFinished()
+        let sem = DispatchSemaphore(value: 0)
+        writer.finishWriting { sem.signal() }
+        sem.wait()
+        
+        guard writer.status == .completed else {
+            print("[PlaybackEngine] Blank carrier failed: \(writer.error?.localizedDescription ?? "?")")
+            return nil
+        }
+        _blankCarrierURL = url
+        print("[PlaybackEngine] Blank carrier video created")
+        return AVURLAsset(url: url)
+    }
+    
     @MainActor
-    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset], isExport: Bool = false) async -> AVPlayerItem? {
+    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080), isExport: Bool = false) async -> AVPlayerItem? {
         let composition = AVMutableComposition()
-        composition.naturalSize = CGSize(width: 1920, height: 1080)
-        let renderSize = CGSize(width: 1920, height: 1080)
+        composition.naturalSize = renderSize
         
         let videoTracks = sequence.tracks.filter { $0.type == .video }
         var maxTimelineDuration: CMTime = .zero
@@ -26,9 +100,24 @@ public class PlaybackEngine {
             for (i, clip) in videoTrack.clips.enumerated() {
                 if clip.textProperties != nil {
                     let targetTime = CMTime(seconds: clip.timelineStart, preferredTimescale: 600)
-                    let duration = CMTime(seconds: clip.duration, preferredTimescale: 600)
-                    compVideoTrack?.insertEmptyTimeRange(CMTimeRange(start: targetTime, duration: duration))
-                    let endTime = CMTimeAdd(targetTime, duration)
+                    let dur = CMTime(seconds: clip.duration, preferredTimescale: 600)
+                    // Insert real (black) video frames so AVFoundation calls our compositor
+                    if let blankAsset = await PlaybackEngine.getBlankCarrierAsset(renderSize: renderSize),
+                       let blankTrack = blankAsset.tracks(withMediaType: .video).first {
+                        do {
+                            try compVideoTrack?.insertTimeRange(
+                                CMTimeRange(start: .zero, duration: dur),
+                                of: blankTrack,
+                                at: targetTime
+                            )
+                        } catch {
+                            print("[PlaybackEngine] Carrier insert error: \(error)")
+                            compVideoTrack?.insertEmptyTimeRange(CMTimeRange(start: targetTime, duration: dur))
+                        }
+                    } else {
+                        compVideoTrack?.insertEmptyTimeRange(CMTimeRange(start: targetTime, duration: dur))
+                    }
+                    let endTime = CMTimeAdd(targetTime, dur)
                     if endTime > maxTimelineDuration { maxTimelineDuration = endTime }
                     continue
                 }
@@ -157,13 +246,14 @@ public class PlaybackEngine {
                 for (trackIndex, track) in videoTracks.enumerated() {
                     let compTrackID = compTrackIDs[trackIndex]
                     
-                    let hasVideoMedia = track.clips.contains { clip in
+                    // Include any track that has a clip (video or text) in this segment.
+                    // Text clips now have real carrier video on the composition track.
+                    let hasClipContent = track.clips.contains { clip in
                         let clipEnd = clip.timelineStart + clip.duration
-                        let overlaps = (clip.timelineStart < end - 0.001 && clipEnd > start + 0.001)
-                        return overlaps && clip.textProperties == nil
+                        return (clip.timelineStart < end - 0.001 && clipEnd > start + 0.001)
                     }
                     
-                    if hasVideoMedia {
+                    if hasClipContent {
                         requiredTrackIDs.append(NSNumber(value: compTrackID) as NSValue)
                     }
                 }
@@ -220,10 +310,8 @@ public class PlaybackEngine {
     }
     
     @MainActor
-    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset]) {
+    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080)) {
         guard let composition = playerItem.asset as? AVMutableComposition else { return }
-        let renderSize = CGSize(width: 1920, height: 1080)
-        let duration = composition.duration
         
         let videoTracks = sequence.tracks.filter { $0.type == .video }
         let compVideoTracks = composition.tracks(withMediaType: .video)
@@ -349,27 +437,38 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
         let attrString = NSAttributedString(string: text, attributes: attributes)
         let framesetter = CTFramesetterCreateWithAttributedString(attrString as CFAttributedString)
         
-        let size = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), nil, CGSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude), nil)
+        let textSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, 0), nil, CGSize(width: renderSize.width, height: CGFloat.greatestFiniteMagnitude), nil)
         
-        let width = max(1, size.width)
-        let height = max(1, size.height)
+        // Use the full render size so the text image is the same size as the canvas
+        let canvasWidth = Int(renderSize.width)
+        let canvasHeight = Int(renderSize.height)
         
-        guard let context = CGContext(data: nil, width: Int(width), height: Int(height), bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        guard let context = CGContext(data: nil, width: canvasWidth, height: canvasHeight, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            print("[renderText] ERROR: Failed to create CGContext")
+            return nil
+        }
         
-        let path = CGPath(rect: CGRect(x: 0, y: 0, width: width, height: height), transform: nil)
+        context.clear(CGRect(x: 0, y: 0, width: canvasWidth, height: canvasHeight))
+        
+        // Center the text frame within the full canvas
+        let textWidth = min(textSize.width, renderSize.width)
+        let textHeight = textSize.height
+        let textX = (renderSize.width - textWidth) / 2.0
+        let textY = (renderSize.height - textHeight) / 2.0
+        
+        let textRect = CGRect(x: textX, y: textY, width: textWidth, height: textHeight)
+        let path = CGPath(rect: textRect, transform: nil)
         let frame = CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, nil)
         
-        context.clear(CGRect(x: 0, y: 0, width: width, height: height))
-        
-        context.clear(CGRect(x: 0, y: 0, width: width, height: height))
-        
-        // Draw the text
         CTFrameDraw(frame, context)
         
-        if let cgImage = context.makeImage() {
-            return CIImage(cgImage: cgImage)
+        guard let cgImage = context.makeImage() else {
+            print("[renderText] ERROR: makeImage() returned nil")
+            return nil
         }
-        return nil
+        
+        print("[renderText] OK: text='\(text)' color=\(props.colorHex) canvas=\(canvasWidth)x\(canvasHeight) textSize=\(textSize)")
+        return CIImage(cgImage: cgImage)
     }
     
     public func startRequest(_ request: AVAsynchronousVideoCompositionRequest) {
@@ -398,7 +497,11 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
                     var sourceImage: CIImage? = nil
                     
                     if let textProps = clip.textProperties {
+                        print("[Compositor] Found TEXT clip at track \(trackIndex), time \(currentTime), text='\(textProps.text)'")
                         sourceImage = self.renderText(textProps, renderSize: renderSize)
+                        if sourceImage == nil {
+                            print("[Compositor] WARNING: renderText returned nil!")
+                        }
                     } else if let assetRef = instruction.mediaReferences.first(where: { $0.id == clip.mediaAssetID }) {
                         if assetRef.metadata.isImage {
                             sourceImage = instruction.imageCache[assetRef.id]
