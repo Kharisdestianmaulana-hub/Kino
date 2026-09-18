@@ -59,16 +59,19 @@ Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It us
 
 Most "native" editors are actually cross-platform compromises wrapped in a macOS skin. Kino is different. Every line of code was written specifically for macOS and Apple Silicon, taking full advantage of hardware-accelerated decoding, Metal-backed rendering, and the tight integration that only a true native app can provide.
 
-The result is an editor that launches instantly, renders without stutter, and handles 4K footage the way macOS was designed to.
+Furthermore, Kino introduces a **Filesystem-First** and **Modular Feature Architecture**. It doesn't trap your media in hidden libraries, and it doesn't force bloatware. The lightweight "Core" provides a complete foundational editing workflow, while 14 advanced optional modules (like Professional Color, Audio Pro, and Advanced Subtitles) can be plugged in exactly when you need them.
+
+The result is an editor that launches instantly, renders without stutter, and scales with your needs.
 
 ## Why Kino
 
 There are plenty of video editors out there. Here is why Kino exists:
 
 - **Truly native.** Not a web app in disguise. Not an Electron wrapper. Not a Qt port. Kino is 100% SwiftUI and AppKit, compiled directly for macOS. It behaves like a Mac app should: instant window snapping, native dark mode, proper menu bar integration, and full Retina support without extra configuration.
-- **Lightweight.** The entire application binary is under 5MB. There are no bundled runtimes, no embedded browsers, no background services consuming your RAM. Kino launches in under a second.
+- **Lightweight & Modular.** The entire application binary is incredibly small. There are no bundled runtimes or background services consuming your RAM. Kino launches in under a second. With our modular architecture, you only install the advanced tools you actually use, ensuring the core editor never becomes slow or bloated.
+- **Filesystem-First & Non-Destructive.** Source media belongs to you. Kino does not create hidden duplicate media libraries. Your original video, audio, and image files remain untouched in your chosen folders, and every timeline operation is strictly non-destructive.
 - **Predictable.** Every edit operation goes through the Command Pattern. This means the application state is always deterministic. If something goes wrong, the undo stack knows exactly how to reverse it.
-- **Educational.** The codebase is intentionally kept readable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as a real-world reference that goes far beyond tutorial-level complexity.
+- **Educational.** The codebase is deliberately kept clean and approachable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as a real-world reference that goes far beyond tutorial-level complexity.
 
 ## Features
 
@@ -183,14 +186,17 @@ Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya 
 
 Kebanyakan editor yang mengklaim "native" sebenarnya adalah kompromi lintas platform yang dibungkus tampilan macOS. Kino berbeda. Setiap baris kodenya ditulis secara spesifik untuk macOS dan Apple Silicon, memanfaatkan sepenuhnya akselerasi perangkat keras untuk decoding, rendering berbasis Metal, dan integrasi mendalam yang hanya bisa dilakukan oleh aplikasi native sejati.
 
-Hasilnya adalah editor yang terbuka dalam sekejap, merender tanpa patah-patah, dan menangani rekaman 4K sesuai kemampuan asli macOS.
+Lebih dari itu, Kino memperkenalkan arsitektur **Filesystem-First** dan **Fitur Modular**. Aplikasi ini tidak mengurung aset media Anda di dalam pustaka tersembunyi, dan tidak memaksa Anda mengunduh fitur yang tidak terpakai. Bagian "Core" (Inti) yang super ringan menyediakan alur kerja pengeditan dasar yang lengkap, sementara 14 modul lanjutan opsional (seperti Warna Profesional, Audio Pro, dan Subtitle Lanjutan) dapat dipasang hanya ketika Anda membutuhkannya.
+
+Hasilnya adalah editor yang terbuka dalam sekejap, merender tanpa patah-patah, dan dapat dikembangkan sesuai kebutuhan Anda.
 
 ## Mengapa Kino
 
 Ada banyak editor video di luar sana. Berikut alasan Kino dibuat:
 
 - **Benar-benar native.** Bukan aplikasi web yang menyamar. Bukan wrapper Electron. Bukan port dari Qt. Kino adalah 100% SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Perilakunya seperti aplikasi Mac seharusnya: window snapping instan, dark mode bawaan, integrasi menu bar yang benar, dan dukungan Retina penuh tanpa konfigurasi tambahan.
-- **Ringan.** Seluruh binary aplikasi berukuran di bawah 5MB. Tidak ada runtime yang dibundel, tidak ada browser tertanam, tidak ada layanan latar belakang yang menghabiskan RAM Anda. Kino terbuka dalam waktu kurang dari satu detik.
+- **Ringan & Modular.** Seluruh binary aplikasi berukuran sangat kecil. Tidak ada runtime yang dibundel atau layanan latar belakang yang menghabiskan RAM Anda. Kino terbuka dalam waktu kurang dari satu detik. Melalui arsitektur modular, Anda hanya memasang fitur lanjutan yang benar-benar Anda pakai, memastikan editor utama tidak pernah menjadi lambat atau membengkak.
+- **Filesystem-First & Non-Destruktif.** Aset media adalah milik Anda. Kino tidak pernah membuat salinan duplikat file media secara diam-diam. Video, audio, dan gambar asli tetap utuh di folder asli Anda, dan setiap proses editing pada timeline dijamin non-destruktif (tidak merusak file asli).
 - **Dapat diprediksi.** Setiap operasi edit melewati Command Pattern. Artinya, state aplikasi selalu deterministik. Jika ada yang salah, tumpukan undo tahu persis cara membalikkannya.
 - **Edukatif.** Basis kode sengaja dijaga agar tetap mudah dibaca. Jika Anda sedang belajar SwiftUI, AVFoundation, atau arsitektur aplikasi macOS, proyek ini berfungsi sebagai referensi dunia nyata yang jauh melampaui kompleksitas level tutorial.
 
