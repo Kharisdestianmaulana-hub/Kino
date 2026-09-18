@@ -4,6 +4,8 @@
 
 Maintain a stable editing experience while Core and optional modules evolve independently.
 
+> **Project Status Note:** This testing strategy outlines the target QA architecture for v1.0. As a small, active open-source project, our current automated test coverage (found in `KinoTests` and `KinoUITests`) is basic, and we heavily rely on manual testing for critical paths. We are incrementally building towards this automated ideal.
+
 ## 2. Test Layers
 
 ### Unit Tests

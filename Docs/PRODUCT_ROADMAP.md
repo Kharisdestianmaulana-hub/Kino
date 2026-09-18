@@ -6,29 +6,29 @@ The product defines 14 optional modules as part of the long-term feature roadmap
 
 ### v1.0 Modules
 
-| # | Module | Target |
-|---|---|---|
-| 1 | Effects | v1.0 |
-| 2 | Transitions | v1.0 |
-| 3 | Advanced Subtitles | v1.0 |
-| 4 | Professional Color | v1.0 |
-| 5 | Audio Pro | v1.0 |
-| 6 | Advanced Export | v1.0 |
+| # | Status | Module | Target |
+|---|---|---|---|
+| 1 | 📋 Planned | Effects | v1.0 |
+| 2 | 📋 Planned | Transitions | v1.0 |
+| 3 | 📋 Planned | Advanced Subtitles | v1.0 |
+| 4 | 📋 Planned | Professional Color | v1.0 |
+| 5 | 📋 Planned | Audio Pro | v1.0 |
+| 6 | 📋 Planned | Advanced Export | v1.0 |
 
 **v1.0 target: Core + 6 optional modules.**
 
 ### Future Modules
 
-| # | Module | Target |
-|---|---|---|
-| 7 | Motion Graphics | Future |
-| 8 | Pro Media / Codecs | Future |
-| 9 | Masking & Tracking | Future |
-| 10 | AI Tools | Future |
-| 11 | Advanced Proxy | Future |
-| 12 | Social Media Presets | Future |
-| 13 | Templates | Future |
-| 14 | Integrations | Future |
+| # | Status | Module | Target |
+|---|---|---|---|
+| 7 | 📋 Planned | Motion Graphics | Future |
+| 8 | 📋 Planned | Pro Media / Codecs | Future |
+| 9 | 📋 Planned | Masking & Tracking | Future |
+| 10 | 📋 Planned | AI Tools | Future |
+| 11 | 📋 Planned | Advanced Proxy | Future |
+| 12 | 📋 Planned | Social Media Presets | Future |
+| 13 | 📋 Planned | Templates | Future |
+| 14 | 📋 Planned | Integrations | Future |
 
 Future modules remain part of the product plan even though they are not required for the v1.0 release.
 

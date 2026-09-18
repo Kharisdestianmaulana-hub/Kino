@@ -4,6 +4,8 @@
 
 A lightweight, native macOS video editor built with Swift and SwiftUI. The application uses a filesystem-first, non-destructive editing workflow and a modular feature architecture.
 
+> **Project Status Note:** This PRD outlines the target requirements for the v1.0 release. Kino is currently in active development. While the Core editing workflow is stable and functional, the modular architecture and advanced features described here are still being built.
+
 ## 2. Product Principles
 
 - Native macOS experience
