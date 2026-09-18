@@ -15,14 +15,6 @@
 
 <br/>
 
-<div align="center">
-  <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
-  <br/><br/>
-    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
-  <br/><br/>
-  <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
-</div>
-
 ---
 
 <details>
@@ -31,21 +23,21 @@
 - [English](#english)
   - [What is Kino](#what-is-kino)
   - [Why Kino](#why-kino)
+  - [Project Status & Limitations](#project-status--limitations)
   - [Features](#features)
   - [Architecture](#architecture)
   - [Getting Started](#getting-started)
   - [Keyboard Shortcuts](#keyboard-shortcuts)
-  - [Project Status & Limitations](#project-status--limitations)
   - [Roadmap](#roadmap)
   - [License](#license)
 - [Bahasa Indonesia](#bahasa-indonesia)
   - [Apa itu Kino](#apa-itu-kino)
   - [Mengapa Kino](#mengapa-kino)
+  - [Status Proyek & Keterbatasan Saat Ini](#status-proyek--keterbatasan-saat-ini)
   - [Fitur](#fitur)
   - [Arsitektur](#arsitektur)
   - [Cara Memulai](#cara-memulai)
   - [Pintasan Keyboard](#pintasan-keyboard)
-  - [Status Proyek & Keterbatasan Saat Ini](#status-proyek--keterbatasan-saat-ini)
   - [Peta Jalan](#peta-jalan-roadmap)
   - [Lisensi](#lisensi)
 
@@ -59,6 +51,14 @@
 
 Kino is a non-linear video editor (NLE) built entirely in Swift for macOS. It uses SwiftUI for the interface, AVFoundation for media processing, and CoreImage for compositing.
 
+<div align="center">
+  <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
+  <br/><br/>
+    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
+</div>
+
 While professional NLEs like Final Cut Pro set the standard for native macOS performance, Kino differentiates itself through a filesystem-first approach, modular architecture, and an intentionally educational codebase. Every line of code is written specifically for macOS, taking advantage of hardware-accelerated decoding and Metal-backed rendering.
 
 Furthermore, Kino introduces a **Filesystem-First** and **Modular Feature Architecture**. It doesn't trap your media in hidden libraries, and it doesn't force unnecessary features. The lightweight "Core" provides a foundational editing workflow, while 14 advanced optional modules (like Professional Color, Audio Pro, and Advanced Subtitles) can be plugged in when you need them.
@@ -69,11 +69,18 @@ The result is an editor designed for quick launch times, smooth rendering, and s
 
 There are plenty of video editors out there. Here is why Kino exists:
 
-- **Native macOS Experience.** Built entirely with SwiftUI and AppKit, compiled directly for macOS. It integrates naturally with the OS, supporting native window management, dark mode, and Retina displays.
+- **Native macOS Experience.** Built entirely with SwiftUI and AppKit, compiled directly for macOS. While professional closed-source editors like Final Cut Pro set the standard for native performance, Kino offers a transparent, educational alternative. It integrates naturally with the OS (native window management, dark mode, Retina displays) while keeping its implementation open for you to study.
 - **Lightweight & Modular.** The application binary is kept small. With our modular architecture, you only install the advanced tools you actually use, helping the core editor remain fast and focused.
 - **Filesystem-First & Non-Destructive.** Source media belongs to you. Kino does not create hidden duplicate media libraries. Your original video, audio, and image files remain untouched in your chosen folders, and every timeline operation is strictly non-destructive. Under the hood, the `MediaService` uses Security-Scoped Bookmarks to maintain persistent references to your files across app launches without copying the raw data.
 - **Predictable.** Every edit operation goes through the Command Pattern. This means the application state is deterministic. If something goes wrong, the undo stack knows exactly how to reverse it.
 - **Educational.** The codebase is deliberately kept clean and approachable. If you are learning SwiftUI, AVFoundation, or macOS app architecture, this project serves as an open, real-world reference for building complex native applications.
+
+## Project Status & Limitations
+
+Kino is currently moving towards its v1.0 release. It is being developed by a small team as an open, educational project, rather than a massive enterprise application.
+
+- **Media Support**: While AVFoundation supports many formats, testing has been primarily limited to standard H.264/HEVC (`.mp4`, `.mov`) files. Professional formats (like ProRes or RAW) have not been extensively benchmarked.
+- **Stability**: As an active project, you may encounter bugs. It is not yet recommended for mission-critical production work.
 
 ## Features
 
@@ -142,13 +149,6 @@ No SPM dependencies. No CocoaPods. No setup scripts. Just open and build.
 | `Cmd + E` | Export Video |
 | `Delete` | Delete Selected Clip |
 
-## Project Status & Limitations
-
-Kino is currently moving towards its v1.0 release. It is being developed by a small team as an open, educational project, rather than a massive enterprise application.
-
-- **Media Support**: While AVFoundation supports many formats, testing has been primarily limited to standard H.264/HEVC (`.mp4`, `.mov`) files. Professional formats (like ProRes or RAW) have not been extensively benchmarked.
-- **Stability**: As an active project, you may encounter bugs. It is not yet recommended for mission-critical production work.
-
 ## Roadmap
 
 Kino uses a **Modular Feature Strategy**. The Core provides a complete basic editing workflow, while advanced features are implemented as optional modules.
@@ -183,6 +183,8 @@ This project is licensed under the **PolyForm Shield License 1.0.0**.
 You are free to read, study, and learn from this code. You may not use it to build a competing product or commercial service. See `LICENSE` for the full terms.
 
 **Mini-FAQ:**
+- **Can I fork and modify this code for my own personal use, without distributing it?**
+  Yes. Under the PolyForm Shield 1.0.0 license, you are free to modify and use the software for personal projects or internal tools, as long as you do not distribute or offer it as a competing video editing product or service.
 - **Can I use this code for my own personal/commercial project?**
   Yes, as long as your project is NOT a competing video editing product or service.
 
@@ -197,6 +199,14 @@ Interested in contributing? Read `CONTRIBUTING.md` for guidelines on bug reports
 
 Kino adalah aplikasi penyunting video non-linear (NLE) yang dibangun sepenuhnya dalam bahasa Swift untuk macOS. Kino menggunakan SwiftUI untuk antarmuka, AVFoundation untuk pemrosesan media, dan CoreImage untuk komposisi visual.
 
+<div align="center">
+  <img src="Screenshots/Screenshot1.png" alt="Kino - Main Workspace" width="800"/>
+  <br/><br/>
+    <img src="Screenshots/Screenshot2.png" alt="Kino - Timeline Editing" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/kino_demo.gif" alt="Kino - Demo" width="800"/>
+</div>
+
 Meski editor profesional seperti Final Cut Pro telah menetapkan standar performa native di macOS, Kino membedakan dirinya melalui pendekatan filesystem-first, arsitektur modular, dan basis kode yang sengaja dibuat edukatif. Setiap baris kode ditulis spesifik untuk macOS, memanfaatkan akselerasi perangkat keras untuk decoding dan rendering berbasis Metal.
 
 Lebih dari itu, Kino memperkenalkan arsitektur **Filesystem-First** dan **Fitur Modular**. Aplikasi ini tidak mengurung aset media Anda di dalam pustaka tersembunyi, dan tidak menyertakan fitur yang belum tentu terpakai secara bawaan. Bagian "Core" (Inti) menyediakan alur kerja pengeditan dasar, sementara 14 modul lanjutan opsional (seperti Warna Profesional, Audio Pro, dan Subtitle Lanjutan) dapat dipasang hanya ketika Anda membutuhkannya.
@@ -207,11 +217,18 @@ Hasilnya adalah editor yang dirancang untuk dapat terbuka dengan cepat, merender
 
 Ada banyak editor video di luar sana. Berikut alasan Kino dibuat:
 
-- **Pengalaman Native macOS.** Dibangun sepenuhnya dengan SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Aplikasi ini terintegrasi secara natural dengan OS, mendukung manajemen jendela bawaan, mode gelap, dan layar Retina.
+- **Pengalaman Native macOS.** Dibangun sepenuhnya dengan SwiftUI dan AppKit, dikompilasi langsung untuk macOS. Meski editor profesional yang closed-source seperti Final Cut Pro telah menetapkan standar performa native, Kino hadir sebagai alternatif yang transparan dan edukatif. Aplikasi ini terintegrasi secara natural dengan OS (manajemen jendela bawaan, mode gelap, layar Retina), sekaligus membiarkan implementasinya terbuka untuk Anda pelajari.
 - **Ringan & Modular.** Ukuran binary aplikasi dijaga agar tetap kecil. Melalui arsitektur modular, Anda hanya memasang fitur lanjutan yang benar-benar Anda pakai, membantu editor utama tetap cepat dan fokus pada hal esensial.
 - **Filesystem-First & Non-Destruktif.** Aset media adalah milik Anda. Kino tidak pernah membuat salinan duplikat file media secara diam-diam. Video, audio, dan gambar asli tetap utuh di folder asli Anda, dan setiap proses editing pada timeline dijamin non-destruktif (tidak merusak file asli). Di balik layar, `MediaService` menggunakan *Security-Scoped Bookmarks* untuk menyimpan referensi persisten ke file Anda lintas sesi tanpa harus menyalin data mentahnya.
 - **Dapat diprediksi.** Setiap operasi edit melewati Command Pattern. Artinya, state aplikasi selalu deterministik. Jika ada yang salah, tumpukan undo tahu persis cara membalikkannya.
 - **Edukatif.** Basis kode sengaja dijaga agar tetap mudah dibaca. Jika Anda sedang belajar SwiftUI, AVFoundation, atau arsitektur aplikasi macOS, proyek ini berfungsi sebagai referensi terbuka di dunia nyata untuk membangun aplikasi native yang kompleks.
+
+## Status Proyek & Keterbatasan Saat Ini
+
+Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan dalam skala kecil sebagai wadah edukasi terbuka, bukan perangkat lunak perusahaan skala besar.
+
+- **Dukungan Media**: Meski AVFoundation mendukung banyak format, pengujian sejauh ini masih terbatas pada file standar H.264/HEVC (`.mp4`, `.mov`). Format profesional (seperti ProRes atau RAW) belum melalui uji performa (benchmark) secara luas.
+- **Stabilitas**: Karena masih dalam tahap pengembangan aktif, Anda mungkin akan menemui bug. Belum direkomendasikan untuk pekerjaan produksi yang sangat kritis.
 
 ## Fitur
 
@@ -280,13 +297,6 @@ Tanpa dependensi SPM. Tanpa CocoaPods. Tanpa script setup. Cukup buka dan build.
 | `Cmd + E` | Ekspor Video |
 | `Delete` | Hapus Klip yang Dipilih |
 
-## Status Proyek & Keterbatasan Saat Ini
-
-Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan dalam skala kecil sebagai wadah edukasi terbuka, bukan perangkat lunak perusahaan skala besar.
-
-- **Dukungan Media**: Meski AVFoundation mendukung banyak format, pengujian sejauh ini masih terbatas pada file standar H.264/HEVC (`.mp4`, `.mov`). Format profesional (seperti ProRes atau RAW) belum melalui uji performa (benchmark) secara luas.
-- **Stabilitas**: Karena masih dalam tahap pengembangan aktif, Anda mungkin akan menemui bug. Belum direkomendasikan untuk pekerjaan produksi yang sangat kritis.
-
 ## Peta Jalan (Roadmap)
 
 Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur kerja pengeditan dasar yang lengkap, sementara fitur-fitur lanjutan diimplementasikan sebagai modul opsional.
@@ -321,6 +331,8 @@ Proyek ini dilisensikan di bawah **PolyForm Shield License 1.0.0**.
 Anda bebas membaca, mempelajari, dan mengambil ilmu dari kode ini. Anda tidak diperbolehkan menggunakannya untuk membangun produk pesaing atau layanan komersial. Lihat `LICENSE` untuk ketentuan lengkapnya.
 
 **Mini-FAQ:**
+- **Bolehkah saya mem-fork dan memodifikasi kode ini untuk dipakai sendiri secara pribadi, tanpa mendistribusikannya?**
+  Boleh. Berdasarkan lisensi PolyForm Shield 1.0.0, Anda bebas memodifikasi dan menggunakan perangkat lunak ini untuk proyek personal atau tool internal, selama Anda tidak mendistribusikan atau menawarkannya sebagai produk/layanan penyunting video pesaing.
 - **Bolehkah saya pakai kode ini untuk project pribadi/komersial saya sendiri?**
   Boleh, selama proyek Anda BUKAN produk atau layanan aplikasi penyunting video pesaing.
 
