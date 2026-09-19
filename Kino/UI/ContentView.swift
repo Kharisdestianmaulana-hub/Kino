@@ -8,8 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var workspace: WorkspaceState
+    
     var body: some View {
-        MainWorkspaceView()
+        if workspace.project == nil {
+            ProjectHubView()
+        } else {
+            MainWorkspaceView()
+        }
     }
 }
 

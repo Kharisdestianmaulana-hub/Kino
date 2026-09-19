@@ -34,10 +34,12 @@ public struct ProjectSettings: Codable {
     public var frameRate: Double
     public var resolutionWidth: Int
     public var resolutionHeight: Int
+    public var backgroundColor: String?
 
-    public init(frameRate: Double = 60.0, resolutionWidth: Int = 3840, resolutionHeight: Int = 2160) {
+    public init(frameRate: Double = 60.0, resolutionWidth: Int = 3840, resolutionHeight: Int = 2160, backgroundColor: String? = "black") {
         self.frameRate = frameRate
         self.resolutionWidth = resolutionWidth
         self.resolutionHeight = resolutionHeight
+        self.backgroundColor = backgroundColor
     }
 }

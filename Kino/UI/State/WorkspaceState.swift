@@ -48,6 +48,7 @@ public class WorkspaceState: ObservableObject {
     // Export State
     @Published public var isExporting: Bool = false
     @Published public var exportProgress: Float = 0.0
+    @Published public var recentProjects: [RecentProject] = []
     
     public init(
         projectService: ProjectService = ProjectService(),
@@ -60,33 +61,90 @@ public class WorkspaceState: ObservableObject {
         self.commandManager = commandManager
         self.timelineService = timelineService ?? TimelineService(projectService: projectService)
         
-        // Auto-recovery check
-        if let lastIDString = UserDefaults.standard.string(forKey: "LastProjectID"),
-           let lastID = UUID(uuidString: lastIDString),
-           projectService.hasAutosave(for: lastID),
-           let recovered = projectService.recoverAutosavedProject(for: lastID) {
-            
-            projectService.updateCurrentProject(recovered)
-            self.project = recovered
-            self.selectedSequenceID = recovered.sequences.first?.id
-            print("Successfully recovered project from autosave.")
-        } else {
-            let newProject = self.projectService.createProject(name: "Untitled Project")
-            var sequence = Sequence(name: "Sequence 1")
-            sequence.tracks.append(Track(name: "V1", type: .video))
-            sequence.tracks.append(Track(name: "A1", type: .audio))
-            var projectWithSequence = newProject
-            projectWithSequence.sequences.append(sequence)
-            self.projectService.updateCurrentProject(projectWithSequence)
-            
-            self.project = projectWithSequence
-            self.selectedSequenceID = sequence.id
+        // Project starts as nil so we show the ProjectHubView by default
+        self.project = nil
+        self.selectedSequenceID = nil
+    }
+    
+    private func saveThumbnail(for proj: Project) {
+        guard let item = self.currentCompositionItem else { return }
+        let time = CMTime.zero
+        let targetSize = CGSize(width: 320, height: 320)
+        
+        Task {
+            if let cgImage = await self.playbackEngine.generateThumbnail(for: item, at: time, size: targetSize) {
+                let bitmapRep = NSBitmapImageRep(cgImage: cgImage)
+                if let jpegData = bitmapRep.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) {
+                    let url = self.projectService.thumbnailURL(for: proj.id)
+                    try? jpegData.write(to: url, options: .atomic)
+                }
+            }
+        }
+    }
+
+    public func createNewProject(name: String, settings: ProjectSettings, folderURL: URL) {
+        var newProject = self.projectService.createProject(name: name)
+        newProject.settings = settings
+        var sequence = Sequence(name: "Sequence 1")
+        sequence.tracks.append(Track(name: "V1", type: .video))
+        sequence.tracks.append(Track(name: "A1", type: .audio))
+        newProject.sequences.append(sequence)
+        
+        let safeName = name.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
+        let fileURL = folderURL.appendingPathComponent("\(safeName).kino")
+        
+        do {
+            let data = try JSONEncoder().encode(newProject)
+            try data.write(to: fileURL, options: .atomic)
+        } catch {
+            print("Failed to create initial .kino file: \(error)")
         }
         
-        // Bangun komposisi agar player siap menampilkan video saat aplikasi dibuka
+        let bookmark = projectService.createBookmark(for: fileURL)
+        projectService.addOrUpdateRecentProject(project: newProject, bookmarkData: bookmark)
+        self.projectService.updateCurrentProject(newProject)
+        
+        self.projectURL = fileURL
+        self.project = newProject
+        self.selectedSequenceID = sequence.id
         self.rebuildComposition()
     }
     
+    @discardableResult
+    public func openRecentProject(id: UUID) -> Bool {
+        if let recovered = projectService.recoverAutosavedProject(for: id) {
+            projectService.updateCurrentProject(recovered)
+            self.project = recovered
+            self.selectedSequenceID = recovered.sequences.first?.id
+            
+            if let recent = projectService.getRecentProjects().first(where: { $0.id == id }),
+               let bookmark = recent.bookmarkData,
+               let url = projectService.resolveBookmark(data: bookmark) {
+                self.projectURL = url
+            }
+            
+            UserDefaults.standard.set(recovered.id.uuidString, forKey: "LastProjectID")
+            self.rebuildComposition()
+            return true
+        } else {
+            return false
+        }
+    }
+
+
+
+    public func renameRecentProject(id: UUID, newName: String) {
+        projectService.renameRecentProject(id: id, newName: newName)
+        loadRecentProjects()
+    }
+    
+    public func deleteRecentProject(id: UUID) {
+        projectService.deleteRecentProject(id: id)
+        loadRecentProjects()
+    }
+    public func loadRecentProjects() {
+        self.recentProjects = projectService.getRecentProjects()
+    }
     public func refreshState() {
         self.project = projectService.currentProject
         self.updatePreviewPresentationState()
@@ -173,6 +231,7 @@ public class WorkspaceState: ObservableObject {
             if let proj = project {
                 DispatchQueue.global(qos: .background).async {
                     self.projectService.autosaveProject(proj)
+                    self.saveThumbnail(for: proj)
                 }
             }
         } catch {
@@ -190,6 +249,7 @@ public class WorkspaceState: ObservableObject {
         if let proj = project {
             DispatchQueue.global(qos: .background).async {
                 self.projectService.autosaveProject(proj)
+                    self.saveThumbnail(for: proj)
             }
         }
     }
@@ -204,6 +264,7 @@ public class WorkspaceState: ObservableObject {
         if let proj = project {
             DispatchQueue.global(qos: .background).async {
                 self.projectService.autosaveProject(proj)
+                    self.saveThumbnail(for: proj)
             }
         }
     }
@@ -450,7 +511,7 @@ public class WorkspaceState: ObservableObject {
         if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == sequenceID }) {
             Task { @MainActor in
                 let renderSize = CGSize(width: proj.settings.resolutionWidth, height: proj.settings.resolutionHeight)
-                self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize)
+                self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize, frameRate: proj.settings.frameRate)
             }
         }
     }
@@ -468,13 +529,14 @@ public class WorkspaceState: ObservableObject {
             if let currentItem = currentCompositionItem, let proj = project, let seq = proj.sequences.first(where: { $0.id == selectedSequenceID }) {
                 Task { @MainActor in
                     let renderSize = CGSize(width: proj.settings.resolutionWidth, height: proj.settings.resolutionHeight)
-                    self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize)
+                    self.playbackEngine.updateCompositions(for: currentItem, sequence: seq, using: proj.mediaReferences, renderSize: renderSize, frameRate: proj.settings.frameRate)
                 }
             }
             
             if let proj = project {
                 DispatchQueue.global(qos: .background).async {
                     self.projectService.autosaveProject(proj)
+                    self.saveThumbnail(for: proj)
                 }
             }
         } catch {
@@ -492,7 +554,7 @@ public class WorkspaceState: ObservableObject {
         let renderSize = CGSize(width: project.settings.resolutionWidth, height: project.settings.resolutionHeight)
         
         Task {
-            let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize)
+            let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize, frameRate: project.settings.frameRate)
             
             await MainActor.run {
                 self.currentCompositionItem = item
@@ -529,7 +591,7 @@ public class WorkspaceState: ObservableObject {
             Task {
                 do {
                     let renderSize = CGSize(width: project.settings.resolutionWidth, height: project.settings.resolutionHeight)
-                    guard let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize, isExport: true) else { return }
+                    guard let item = await playbackEngine.buildPlayerItem(for: seq, using: project.mediaReferences, renderSize: renderSize, frameRate: project.settings.frameRate, isExport: true) else { return }
                     try await exportService.export(item: item, to: url) { progress in
                         DispatchQueue.main.async {
                             self.exportProgress = progress

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		569234ECC1E14CE99FADB650 /* UI/Workspace/ProjectHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7704AC70AB364A71A7D46BA4 /* UI/Workspace/ProjectHubView.swift */; };
 		00E2FCBFAB614479A66005A7 /* Core/Services/TimelineServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C628595C99546DD83CAF1A6 /* Core/Services/TimelineServiceTests.swift */; };
 		0519411EA0BA27B3F4FA7230 /* ModifyClipPropertiesCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = BACA4226821C9A81973691CE /* ModifyClipPropertiesCommand.swift */; };
 		0597E0A435FD4B11A454E220 /* UI/MediaBrowser/MediaGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1653258E35494420B93C8154 /* UI/MediaBrowser/MediaGridItemView.swift */; };
@@ -79,6 +80,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7704AC70AB364A71A7D46BA4 /* UI/Workspace/ProjectHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UI/Workspace/ProjectHubView.swift; sourceTree = "<group>"; };
 		04C432FB0FCF46CF9707E328 /* Core/Domain/Marker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Domain/Marker.swift; sourceTree = "<group>"; };
 		0B9EA26CC5C244A5A062ED39 /* Core/Domain/MediaAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Domain/MediaAsset.swift; sourceTree = "<group>"; };
 		0BA3CACADC1441FEBDED9ED4 /* Core/Commands/Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Commands/Command.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				171785AA60434FBE9A921E17 /* Core/Commands/TimelineCommands.swift */,
 				2099F612651A4E958B98928F /* UI/State/WorkspaceState.swift */,
 				1670345EF34048ECA40E6BEA /* UI/Workspace/MainWorkspaceView.swift */,
+				7704AC70AB364A71A7D46BA4 /* UI/Workspace/ProjectHubView.swift */,
 				26ACD8FDC4B4422CB0DEB559 /* UI/Timeline/TimelineView.swift */,
 				A0B1F19592A04A6F9A827096 /* UI/Timeline/TrackView.swift */,
 				29302752701E4B1A9AAE9284 /* UI/Timeline/ClipView.swift */,
@@ -390,6 +393,7 @@
 				9242CD182E8948C89745D84A /* Core/Commands/TimelineCommands.swift in Sources */,
 				198267702D504A21B31E1515 /* UI/State/WorkspaceState.swift in Sources */,
 				A5C69A896B3545488F701A3C /* UI/Workspace/MainWorkspaceView.swift in Sources */,
+				569234ECC1E14CE99FADB650 /* UI/Workspace/ProjectHubView.swift in Sources */,
 				796CC5776A274874AEC0B074 /* UI/Timeline/TimelineView.swift in Sources */,
 				49940495724F460687FD8BBC /* UI/Timeline/TrackView.swift in Sources */,
 				9781A97EE10247DCBD3B1EB7 /* UI/Timeline/ClipView.swift in Sources */,

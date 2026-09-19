@@ -87,7 +87,7 @@ public class PlaybackEngine {
     }
     
     @MainActor
-    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080), isExport: Bool = false) async -> AVPlayerItem? {
+    public func buildPlayerItem(for sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080), frameRate: Double = 60.0, isExport: Bool = false) async -> AVPlayerItem? {
         let composition = AVMutableComposition()
         composition.naturalSize = renderSize
         
@@ -173,7 +173,8 @@ public class PlaybackEngine {
             maxTimelineDuration = CMTimeAdd(maxTimelineDuration, padDuration)
         }
         
-        let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, duration: maxTimelineDuration)
+        let bg = WorkspaceState.shared.project?.settings.backgroundColor
+        let videoComposition = PlaybackEngine.buildVideoComposition(for: sequence, in: composition, using: mediaReferences, renderSize: renderSize, frameRate: frameRate, duration: maxTimelineDuration, backgroundColor: bg)
         
         let audioTracks = sequence.tracks.filter { $0.type == .audio }
         for audioTrack in audioTracks {
@@ -216,7 +217,7 @@ public class PlaybackEngine {
     }
     
 
-    private static func buildInstructions(for sequence: Sequence, composition: AVMutableComposition, compVideoTracks: [AVMutableCompositionTrack], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize) -> [KinoVideoCompositionInstruction] {
+    private static func buildInstructions(for sequence: Sequence, composition: AVMutableComposition, compVideoTracks: [AVMutableCompositionTrack], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize, backgroundColor: String? = nil) -> [KinoVideoCompositionInstruction] {
         let duration = composition.duration.seconds
         let videoTracks = sequence.tracks.filter { $0.type == .video }
         
@@ -265,7 +266,8 @@ public class PlaybackEngine {
                     mediaReferences: mediaReferences,
                     imageCache: imageCache,
                     renderSize: renderSize,
-                    requiredTrackIDs: requiredTrackIDs
+                    requiredTrackIDs: requiredTrackIDs,
+                    backgroundColor: backgroundColor
                 )
                 instructions.append(instruction)
             }
@@ -273,7 +275,7 @@ public class PlaybackEngine {
         return instructions
     }
 
-    public static func buildVideoComposition(for sequence: Sequence, in composition: AVMutableComposition, using mediaReferences: [MediaAsset], renderSize: CGSize, duration: CMTime) -> AVMutableVideoComposition? {
+    public static func buildVideoComposition(for sequence: Sequence, in composition: AVMutableComposition, using mediaReferences: [MediaAsset], renderSize: CGSize, frameRate: Double, duration: CMTime, backgroundColor: String? = nil) -> AVMutableVideoComposition? {
         let videoTracks = sequence.tracks.filter { $0.type == .video }
         let compVideoTracks = composition.tracks(withMediaType: .video)
         guard compVideoTracks.count == videoTracks.count else { return nil }
@@ -298,19 +300,19 @@ public class PlaybackEngine {
             }
         }
         
-        let instructions = buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize)
+        let instructions = buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize, backgroundColor: backgroundColor)
         
         let videoComposition = AVMutableVideoComposition()
         videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
         videoComposition.renderSize = renderSize
-        videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
+        videoComposition.frameDuration = CMTime(value: 1, timescale: Int32(frameRate))
         videoComposition.instructions = instructions
         
         return videoComposition
     }
     
     @MainActor
-    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080)) {
+    public func updateCompositions(for playerItem: AVPlayerItem, sequence: Sequence, using mediaReferences: [MediaAsset], renderSize: CGSize = CGSize(width: 1920, height: 1080), frameRate: Double = 60.0) {
         guard let composition = playerItem.asset as? AVMutableComposition else { return }
         
         let videoTracks = sequence.tracks.filter { $0.type == .video }
@@ -336,7 +338,8 @@ public class PlaybackEngine {
                 }
             }
             
-            let instructions = Self.buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize)
+            let bg = WorkspaceState.shared.project?.settings.backgroundColor
+            let instructions = Self.buildInstructions(for: sequence, composition: composition, compVideoTracks: compVideoTracks, mediaReferences: mediaReferences, imageCache: imageCache, renderSize: renderSize, backgroundColor: bg)
             
             if let current = playerItem.videoComposition as? AVMutableVideoComposition {
                 current.instructions = instructions
@@ -347,7 +350,7 @@ public class PlaybackEngine {
                 let videoComposition = AVMutableVideoComposition()
                 videoComposition.customVideoCompositorClass = KinoVideoCompositor.self
                 videoComposition.renderSize = renderSize
-                videoComposition.frameDuration = CMTime(value: 1, timescale: 60)
+                videoComposition.frameDuration = CMTime(value: 1, timescale: Int32(frameRate))
                 videoComposition.instructions = instructions
                 playerItem.videoComposition = videoComposition
             }
@@ -382,7 +385,30 @@ public class PlaybackEngine {
                 }
             }
             audioMix.inputParameters = [ap]
+
             playerItem.audioMix = audioMix
+        }
+    }
+
+    public func generateThumbnail(for item: AVPlayerItem, at time: CMTime, size: CGSize) async -> CGImage? {
+        let asset = item.asset
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        // Note: access to item.videoComposition might need await on macOS 13+, but we are on macOS 12.
+        // If it throws an async error, we just avoid setting it for the thumbnail if it causes trouble, 
+        // but let's try to get it without await first. Wait, the error said `property access is async`.
+        // Let's just bypass videoComposition for the thumbnail to be safe and fast.
+        generator.maximumSize = size
+        
+        return await withCheckedContinuation { continuation in
+            generator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { requestedTime, image, actualTime, result, error in
+                if let cgImage = image, result == .succeeded {
+                    continuation.resume(returning: cgImage)
+                } else {
+                    print("[PlaybackEngine] Thumbnail generation failed: \(String(describing: error))")
+                    continuation.resume(returning: nil)
+                }
+            }
         }
     }
 }
@@ -391,6 +417,7 @@ import AVFoundation
 import CoreGraphics
 import CoreImage
 import CoreVideo
+
 
 public class KinoVideoCompositionInstruction: NSObject, AVVideoCompositionInstructionProtocol {
     public var timeRange: CMTimeRange
@@ -405,14 +432,16 @@ public class KinoVideoCompositionInstruction: NSObject, AVVideoCompositionInstru
     public var mediaReferences: [MediaAsset]
     public var imageCache: [UUID: CIImage]
     public var renderSize: CGSize
+    public var backgroundColor: String?
     
-    public init(timeRange: CMTimeRange, videoTracks: [Track], compTrackIDs: [CMPersistentTrackID], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize, requiredTrackIDs: [NSValue]? = nil) {
+    public init(timeRange: CMTimeRange, videoTracks: [Track], compTrackIDs: [CMPersistentTrackID], mediaReferences: [MediaAsset], imageCache: [UUID: CIImage], renderSize: CGSize, requiredTrackIDs: [NSValue]? = nil, backgroundColor: String? = nil) {
         self.timeRange = timeRange
         self.videoTracks = videoTracks
         self.compTrackIDs = compTrackIDs
         self.mediaReferences = mediaReferences
         self.imageCache = imageCache
         self.renderSize = renderSize
+        self.backgroundColor = backgroundColor
         
         self.requiredSourceTrackIDs = requiredTrackIDs
     }
@@ -503,7 +532,8 @@ public class KinoVideoCompositor: NSObject, AVVideoCompositing {
             }
             
             let renderSize = instruction.renderSize
-            var finalImage = CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: renderSize))
+            let bgColor: CIColor = (instruction.backgroundColor == "white") ? .white : .black
+            var finalImage = CIImage(color: bgColor).cropped(to: CGRect(origin: .zero, size: renderSize))
                         let currentTime = request.compositionTime.seconds
             print("[KinoVideoCompositor] Render requested for time: \(currentTime)")
             
@@ -634,4 +664,5 @@ extension NSColor {
         }
         return nil
     }
+
 }

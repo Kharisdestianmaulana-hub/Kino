@@ -60,9 +60,10 @@ public struct ViewerView: View {
             
             GeometryReader { proxy in
                 let canvasRect = canvasRectForViewer(in: proxy.size)
+                let bgColor: Color = (workspace.project?.settings.backgroundColor == "white") ? .white : .black
                 
                 ZStack {
-                    Color.black
+                    bgColor
                         .contentShape(Rectangle())
                         .onTapGesture {
                             workspace.clearSelection()
@@ -73,7 +74,7 @@ public struct ViewerView: View {
                                             ZStack {
                             NativeVideoPlayer(player: player)
                             if workspace.isPlayheadInGap() {
-                                Color.black
+                                bgColor
                             }
                         }
                         .frame(width: canvasRect.width, height: canvasRect.height)
@@ -376,8 +377,6 @@ private struct ViewerTransformOverlay: View {
             let attributes: [NSAttributedString.Key: Any] = [.font: nsFont]
             let textSize = (text as NSString).size(withAttributes: attributes)
             
-            print("[DEBUG] getMediaSize text='\(text)' font=\(textProps.fontSize) size=\(textSize) baseScale=\(baseScale)")
-            
             let padding: CGFloat = 24
             return CGSize(
                 width: (textSize.width + padding) * baseScale,
@@ -385,10 +384,29 @@ private struct ViewerTransformOverlay: View {
             )
         }
         
+        // Cek dimensi asli dari media (video/gambar) agar bounding box fit dengan aspect ratio media
+        if let assetRef = workspace.project?.mediaReferences.first(where: { $0.id == context.clip.mediaAssetID }),
+           let mediaWInt = assetRef.metadata.resolutionWidth,
+           let mediaHInt = assetRef.metadata.resolutionHeight,
+           mediaWInt > 0, mediaHInt > 0 {
+            
+            let mediaW = CGFloat(mediaWInt)
+            let mediaH = CGFloat(mediaHInt)
+            
+            // Hitung scale agar media fit di dalam resolusi canvas (seperti AVLayerVideoGravity.resizeAspect)
+            let mScaleX = resW / mediaW
+            let mScaleY = resH / mediaH
+            let mediaBaseScale = min(mScaleX, mScaleY)
+            
+            let scaledMediaW = mediaW * mediaBaseScale
+            let scaledMediaH = mediaH * mediaBaseScale
+            
+            return CGSize(width: scaledMediaW * baseScale, height: scaledMediaH * baseScale)
+        }
+        
         return CGSize(width: resW * baseScale, height: resH * baseScale)
     }
     
-    @ViewBuilder
     private func selectionSurface(
         context: ActiveVideoClipContext,
         transform: ClipTransform,

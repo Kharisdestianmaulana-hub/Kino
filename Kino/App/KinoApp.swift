@@ -44,17 +44,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return .terminateNow
         }
     }
+    private func applyTheme(_ theme: String) {
+        if theme == "dark" {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        } else if theme == "light" {
+            NSApp.appearance = NSAppearance(named: .aqua)
+        } else {
+            NSApp.appearance = nil
+        }
+    }
 }
-
 @main
 struct KinoApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var workspace = WorkspaceState.shared
     
+    @AppStorage("AppTheme") private var appTheme: String = "system"
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(workspace)
+                .preferredColorScheme(appTheme == "dark" ? .dark : (appTheme == "light" ? .light : nil))
+                .onAppear {
+                    applyTheme(appTheme)
+                }
+                .onChange(of: appTheme) { newTheme in
+                    applyTheme(newTheme)
+                }
         }
         .commands {
             CommandGroup(replacing: .saveItem) {
@@ -104,6 +121,15 @@ struct KinoApp: App {
                 }
                 .keyboardShortcut("n", modifiers: [])
             }
+        }
+    }
+    private func applyTheme(_ theme: String) {
+        if theme == "dark" {
+            NSApp.appearance = NSAppearance(named: .darkAqua)
+        } else if theme == "light" {
+            NSApp.appearance = NSAppearance(named: .aqua)
+        } else {
+            NSApp.appearance = nil
         }
     }
 }
