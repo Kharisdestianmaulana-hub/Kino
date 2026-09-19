@@ -108,6 +108,10 @@ Kino is currently moving towards its v1.0 release. It is being developed by a sm
 | **Real Waveforms** | Audio waveforms are generated from actual 16-bit PCM sample data via `AVAssetReader`, not random squiggly lines. Silent tracks show as flat lines so you know immediately. |
 | **Thumbnail Cache** | A thread-safe in-memory cache ensures that scrolling through hundreds of media assets stays at 60fps. Thumbnails and waveforms are generated once, then served from memory. |
 | **Inspector Panel** | Displays comprehensive media file info (resolution, framerate, status) and provides precise sliders to adjust clip properties in the timeline. |
+| **Project Hub** | A centralized dashboard for creating, managing, and launching projects. Includes right-click context menus for renaming and deleting projects. |
+| **Settings Dashboard** | Global preferences for UI themes (System/Light/Dark), default FPS, resolution, and canvas color, along with a one-click cache cleaner. |
+| **Security-Scoped Saves** | Transparent `.kino` project files managed with macOS Security-Scoped Bookmarks, allowing background autosaves without annoying permission prompts. |
+| **Custom Canvas Color** | Select between black or white background for your video canvas which translates directly to the exported video. |
 | **Command Pattern** | Every timeline action is wrapped in a reversible command object (`MoveClipCommand`, `SplitClipCommand`), providing the foundation for full undo/redo history. |
 
 ## Architecture
@@ -188,6 +192,8 @@ Kino uses a **Modular Feature Strategy**. The Core provides a complete basic edi
 | ✅ Stable | Comprehensive metadata inspector |
 | ✅ Stable | Basic color adjustments (Brightness, Contrast, Saturation) |
 | ✅ Stable | Basic keyframes system (Animation interpolation) |
+| ✅ Stable | Project Hub & Global Settings |
+| ✅ Stable | Custom Canvas Color rendering |
 | 📋 Planned | Module 1: Effects |
 | 📋 Planned | Module 2: Transitions |
 | 📋 Planned | Module 3: Advanced Subtitles |
@@ -287,6 +293,10 @@ Kino saat ini sedang dalam perjalanan menuju rilis v1.0. Proyek ini dikembangkan
 | **Waveform Asli** | Gelombang suara dihasilkan dari data sampel PCM 16-bit asli melalui `AVAssetReader`, bukan garis acak. Track yang sunyi ditampilkan sebagai garis datar sehingga Anda langsung tahu. |
 | **Cache Thumbnail** | Cache di memori yang thread-safe memastikan scroll ratusan aset media tetap 60fps. Thumbnail dan waveform dibuat sekali, lalu disajikan dari memori. |
 | **Panel Inspector** | Menampilkan info komplit file media (resolusi, framerate, status) dan menyediakan slider presisi untuk menyesuaikan properti klip di timeline. |
+| **Project Hub** | Dasbor terpusat untuk membuat, mengelola, dan meluncurkan proyek. Dilengkapi menu konteks klik kanan untuk ganti nama dan hapus proyek. |
+| **Settings Dashboard** | Pengaturan global untuk tema UI (Sistem/Terang/Gelap), FPS bawaan, resolusi, warna kanvas, beserta pembersih cache sekali klik. |
+| **Security-Scoped Saves** | Penyimpanan file `.kino` transparan menggunakan Security-Scoped Bookmarks macOS, mengaktifkan autosave latar belakang tanpa gangguan pop-up izin akses. |
+| **Warna Kanvas Kustom** | Pilih antara latar belakang hitam atau putih untuk kanvas video Anda, yang akan merender langsung pada hasil ekspor. |
 | **Pola Command** | Setiap aksi di timeline dibungkus dalam objek perintah yang dapat dibalik (`MoveClipCommand`, `SplitClipCommand`), menyediakan fondasi untuk riwayat undo/redo penuh. |
 
 ## Arsitektur
@@ -367,6 +377,8 @@ Kino menggunakan **Strategi Fitur Modular**. Bagian Core (Inti) menyediakan alur
 | ✅ Stable | Metadata Inspector ekstensif |
 | ✅ Stable | Penyesuaian warna dasar (Brightness, Contrast, Saturation) |
 | ✅ Stable | Sistem keyframes dasar (Interpolasi animasi) |
+| ✅ Stable | Project Hub & Pengaturan Global |
+| ✅ Stable | Rendering Warna Kanvas Kustom |
 | 📋 Planned | Modul 1: Efek (Effects) |
 | 📋 Planned | Modul 2: Transisi (Transitions) |
 | 📋 Planned | Modul 3: Subtitle Lanjutan |
